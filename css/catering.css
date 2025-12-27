@@ -397,10 +397,11 @@ body {
 }
 
 .plate-row input {
-    width: 100px;
-    border: none;
-    height: 35px;
-    border-bottom: 1px solid grey;
+    width: 130px;
+    /* border: none; */
+    height: 25px;
+    border: 1px solid grey;
+    border-radius: 4px;
 
 }
 
@@ -475,10 +476,9 @@ body {
     flex-direction: column;
     gap: 10px;
     width: 95%;
-    border: 2px solid grey;
+    /* border: 2px solid grey; */
     height: 253px;
-    overflow-y: auto;
-    scrollbar-width: thin;
+
     margin-top: 13px;
 }
 
@@ -486,6 +486,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 .service-row {
@@ -567,13 +569,25 @@ body {
 
 
 #save-menu {
-    width: 130px;
+    width: 60px;
     height: 5vh;
     background-color: var(--color-dark);
     color: white;
     font-size: 16px;
     border-radius: 6px;
     margin-right: 20px;
+    border: none;
+}
+
+#cancel-menu {
+    width: 60px;
+    height: 5vh;
+    background-color: red;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    margin-right: 20px;
+    border: none;
 }
 
 .last-container {
@@ -584,15 +598,17 @@ body {
     flex-direction: row;
 }
 
-#grand_total{
-    border:none;
-    border-bottom:2px solid grey;
+#grand_total {
+    border: none;
+    border-bottom: 2px solid grey;
 }
-.grand_total{
+
+.grand_total {
     font-size: 20px;
     font-weight: bold;
 }
-.grand-total{
-    gap:8px;
+
+.grand-total {
+    gap: 8px;
     justify-content: flex-start;
 }

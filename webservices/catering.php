@@ -10,8 +10,51 @@ $load = $data["load"] ?? "";
 
 if ($load == "savemenu") {
     savemenu($conn);
-}
+} else if ($load == "cancelmenu") {
+    cancelmenu($conn);
+} 
 
+
+
+
+function cancelmenu($conn)
+{
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $customerid = $data['customerid'] ?? null;
+    $addressid  = $data['addressid'] ?? null;
+    $orderdate  = $data['orderdate'] ?? null;
+
+    if (!$customerid || !$addressid || !$orderdate) {
+        echo json_encode([
+            "status" => "failed",
+            "message" => "Missing required data"
+        ]);
+        return;
+    }
+
+    $sql = "
+        UPDATE catering_orders
+        SET order_status = 0
+        WHERE customer_id = '$customerid'
+          AND address_id  = '$addressid'
+          AND order_date  = '$orderdate'
+    ";
+
+    $result = setData($conn, $sql);
+
+    if ($result) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Order cancelled"
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "failed",
+            "message" => "Unable to cancel order"
+        ]);
+    }
+}
 
 
 

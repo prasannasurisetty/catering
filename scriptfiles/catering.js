@@ -721,6 +721,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+document.getElementById("cancel-menu").addEventListener("click", cancelOrder);
+
+function cancelOrder() {
+
+    if (!confirm("Are you sure you want to cancel this order?")) {
+        return;
+    }
+
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+    const addressid = selectedAddressId;
+    const orderdate = document.querySelector('input[type="date"]').value;
+
+    if (!customerid || !addressid || !orderdate) {
+        alert("Missing order details");
+        return;
+    }
+
+    const payload = {
+        load: "cancelmenu",
+        customerid: customerid,
+        addressid: addressid,
+        orderdate: orderdate
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/cateringservices.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (response) {
+            if (response.status === "success") {
+                alert("Order cancelled successfully");
+
+                // Optional UI reset
+                document.getElementById("plate_order_section").style.display = "none";
+                document.getElementById("plate_preview").style.display = "none";
+            } else {
+                alert(response.message || "Failed to cancel order");
+            }
+        },
+
+        error: function () {
+            alert("Server error while cancelling order");
+        }
+    });
+}
+
+
+
+
 
 
 

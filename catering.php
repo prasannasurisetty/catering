@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Catering</title>
+    <title></title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
@@ -107,16 +107,14 @@
                         </div>
 
                         <div class="services-order" id="services_order_section" style="display:none;">
-                            <div class="plate-box">
-                                <div class="plate-row">
-                                    <span id="heading-info">Services Info</span>
-                                </div>
-                                <div class="plate-row">
-                                    <button class="add-service-btn" onclick="addServiceRow()">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                </div>
+                            <div class="add-services-text" onclick="addServiceRow()">
+                                <i class="fa fa-plus"></i> Add Services
                             </div>
+
+                            <div id="services_container">
+                                <!-- Service rows will appear here -->
+                            </div>
+
 
                             <div id="services_container">
                                 <!-- Service rows will appear here -->
@@ -131,7 +129,8 @@
                                 <input type="number" id="grand_total" readonly>
                             </div>
                             <div class="plate-button">
-                                <button id="save-menu">Save Menu</button>
+                                <button id="save-menu">Save</button>
+                                <button id="cancel-menu">Cancel</button>
                             </div>
                         </div>
 
