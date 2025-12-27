@@ -69,7 +69,7 @@ function highlightAddress(aid) {
     const plateSection = document.getElementById("plate_order_section");
     if (plateSection) plateSection.style.display = "flex";
 
-    const serviceSection = document.getElementById("services_order_section");
+    const serviceSection = document.getElementById("plate_preview");
     if (serviceSection) serviceSection.style.display = "flex";
 
 }
@@ -500,11 +500,6 @@ $(document).on("click", ".address_block", function (e) {
     highlightAddress(aid);
 });
 
-
-
-
-
-
 function updateSummary() {
     const price = Number(document.getElementById("plate_price").value) || 0;
     const count = Number(document.getElementById("plate_count").value) || 0;
@@ -532,9 +527,6 @@ function updateGrandTotal() {
     document.getElementById("grand_total").value = grandTotal;
 }
 
-
-
-
 function addServiceRow() {
     const container = document.getElementById("services_container");
 
@@ -551,6 +543,9 @@ function addServiceRow() {
 
     container.appendChild(row);
 }
+document.addEventListener("DOMContentLoaded", function () {
+    addServiceRow(); // default one row
+});
 
 function removeServiceRow(btn) {
     btn.parentElement.remove();
@@ -568,9 +563,6 @@ function getItemsFromTextarea() {
 }
 
 function saveCateringOrder() {
-
-    /* ================= BASIC VALIDATIONS ================= */
-
     const cidEl = document.querySelector(".customer_id");
     const customer_id = cidEl ? cidEl.dataset.cid : null;
 
@@ -671,8 +663,7 @@ function saveCateringOrder() {
         total_amount: total_amount,
         grand_total: grand_total,
         fooditems: fooditems,
-        services: services,
-        admin_id: admin_id   // use session admin id if needed
+        services: services
     };
 
     console.log("SAVE ORDER PAYLOAD:", payload);
@@ -710,16 +701,12 @@ function saveCateringOrder() {
     });
 }
 
-
-
 document.addEventListener("DOMContentLoaded", function () {
     const saveBtn = document.getElementById("save-menu");
     if (saveBtn) {
         saveBtn.addEventListener("click", saveCateringOrder);
     }
 });
-
-
 
 document.getElementById("cancel-menu").addEventListener("click", cancelOrder);
 
@@ -769,6 +756,73 @@ function cancelOrder() {
         }
     });
 }
+
+
+
+
+// right side div 
+
+function fetchAllOrders() {
+    console.log("fetch all orders");
+    var payload = {
+        load: "allorders"
+    }
+    console.log("fetch all orders payload",payload);
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/catering.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+        success: function (response) {
+            console.log("fetch all orders", response);
+            const container = document.getElementById("ordersList");
+            container.innerHTML = "";
+
+            if (response.code !== 200 || !response.data) {
+                container.innerHTML = "<p>No orders found</p>";
+                return;
+            }
+
+            response.data.forEach(order => {
+                const div = document.createElement("div");
+                div.className = "order-card";
+                div.innerHTML = `
+                    <h4>Order - ${order.order_id}</h4>
+                    <p><b>Customer:</b> ${order.customer_id}</p>
+                    <p><b>Address:</b> ${order.address_id}</p>
+                    <p><b>Date:</b> ${order.order_date}</p>
+                    <p><b>Total:</b> ₹${order.grand_total}</p>
+                `;
+                container.appendChild(div);
+            });
+        },
+        error: function () {
+            alert("Error loading orders");
+        }
+    });
+}
+
+// Load on page open
+fetchAllOrders();
+
+
+function fetchmenu($conn){
+    console.log("fetchmenu function");
+     var payload  = {
+        customerid : customerid,
+        addressid : addressid,
+        orderdate : orderdate,
+        ordertime : ordertime
+     }
+     console.log("fetchmenu function payload",payload);
+
+     $.ajax({
+        
+     })
+}
+
 
 
 

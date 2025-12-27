@@ -42,18 +42,6 @@ body {
     height: 91vh;
 }
 
-.fixed-container {
-    /* border : 2px solid blue; */
-    width: 30%;
-    height: 91vh;
-
-}
-
-
-
-
-
-
 .customer_search {
     height: 7%;
     width: 100%;
@@ -345,11 +333,6 @@ body {
     animation: pressBounce 0.25s ease-out;
 }
 
-
-
-
-
-
 /* ===== PLATE SECTION ===== */
 .plate-order {
     /* background: #ffffff; */
@@ -360,7 +343,11 @@ body {
     gap: 8px;
 }
 
-
+.plate_preview {
+    display: flex;
+    flex-direction: column;
+    gap:10px;
+}
 
 .plate-box {
     width: 100%;
@@ -397,7 +384,7 @@ body {
 }
 
 .plate-row input {
-    width: 130px;
+    width: 100px;
     /* border: none; */
     height: 25px;
     border: 1px solid grey;
@@ -405,28 +392,23 @@ body {
 
 }
 
-
-
-
-
-
 .order-menu {
     width: 100%;
     height: 62vh;
-    border: 2px solid brown;
+    /* border: 2px solid brown; */
     display: flex;
     flex-direction: row;
     border-radius: 10px;
-    border: 2px solid #e3e9f2;
-    background: #f8fafd;
+    /* border: 2px solid #e3e9f2;
+    background: #f8fafd; */
 
 }
 
 .section {
     width: 50%;
     /* border: 2px solid red; */
+    background-color: #ffffff;
 }
-
 
 .catering-ordering {
     /* border: 2px solid green; */
@@ -435,8 +417,6 @@ body {
     display: flex;
     flex-direction: column;
 }
-
-
 
 .fa {
     transition: color 0.2s ease;
@@ -475,7 +455,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    width: 95%;
+    width: 90%;
     /* border: 2px solid grey; */
     height: 253px;
 
@@ -567,7 +547,6 @@ body {
     align-items: center;
 }
 
-
 #save-menu {
     width: 60px;
     height: 5vh;
@@ -611,4 +590,59 @@ body {
 .grand-total {
     gap: 8px;
     justify-content: flex-start;
+}
+
+
+/* total right div */
+
+
+.fixed-container {
+    
+    width: 30%;
+    height: 91vh;
+    position: fixed;
+    right: 0;
+    height: calc(100vh - 70px);
+    background: #fff;
+    border-left: 1px solid #ddd;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.order-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #fafafa;
+}
+
+.order-card h4 {
+    margin: 0 0 5px;
+    font-size: 15px;
+    
+}
+
+.order-card p {
+    margin: 2px 0;
+    font-size: 13px;
+}
+
+#ordersList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* 2 cards per row */
+    gap: 10px;
+    /* border : 2px solid #e0e0e0; */
+    margin:3px;
+
+  
+}
+
+.order-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 8px;
+    background: #ffffff;
+    font-size: 13px;
 }

@@ -81,7 +81,7 @@
 
 
 
-                    <div class="plate_preview section" id="plate_preview">
+                    <div class="plate_preview section" id="plate_preview" style="display:none;">
                         <div>
                             <span id="heading-info">Plate Info</span>
 
@@ -106,7 +106,7 @@
                             </div>
                         </div>
 
-                        <div class="services-order" id="services_order_section" style="display:none;">
+                        <div class="services-order" id="services_order_section">
                             <div class="add-services-text" onclick="addServiceRow()">
                                 <i class="fa fa-plus"></i> Add Services
                             </div>
@@ -145,8 +145,10 @@
             </div>
         </div>
         <div class="fixed-container">
-            loading fixed container.............
+           <center> <h3>All Orders</h3> </center>
+            <div id="ordersList"></div>
         </div>
+
     </div>
 
 

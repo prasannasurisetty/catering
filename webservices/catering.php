@@ -8,11 +8,60 @@ $jsondata = file_get_contents('php://input');
 $data = json_decode($jsondata, true);
 $load = $data["load"] ?? "";
 
+
+
 if ($load == "savemenu") {
     savemenu($conn);
 } else if ($load == "cancelmenu") {
     cancelmenu($conn);
-} 
+} else if ($load == "allorders") {
+    allorders($conn);
+} else if($load == "fetchmenu"){
+    fetchmenu($conn);
+
+}
+
+function fetchmenu($conn)
+{
+    global $customerid,$addressid,$orderdate,$ordertime;
+    $sql = "SELECT * FROM `catering_orders` WHERE customer_id = '$customerid' AND address_id = '$addressid' AND order_date = '$orderdate' AND order_time = '$ordertime';";
+    $result = getData($conn, $sql);
+
+    if (!empty($result)) {
+        echo json_encode([
+            "code" => 200,
+            "status" => "success",
+            "data" => $result
+        ]);
+    } else {
+        echo json_encode([
+            "code" => 404,
+            "status" => "No Records Found",
+            "data" => []
+        ]);
+    }
+}
+
+function allorders($conn)
+{
+    $sql = "SELECT * FROM catering_orders";
+    $result = getData($conn, $sql);
+
+    if (!empty($result)) {
+        echo json_encode([
+            "code" => 200,
+            "status" => "success",
+            "data" => $result
+        ]);
+    } else {
+        echo json_encode([
+            "code" => 404,
+            "status" => "No Records Found",
+            "data" => []
+        ]);
+    }
+}
+
 
 
 
@@ -77,6 +126,7 @@ function savemenu($conn)
 
     $fooditems    = $data['fooditems'] ?? [];
     $services     = $data['services'] ?? [];
+
 
     /* ================= plate_id from fooditems ================= */
     $res = getData($conn, "SELECT MAX(plate_id) AS max_id FROM catering_fooditems");
@@ -152,7 +202,7 @@ function savemenu($conn)
               '$orderdate','$ordertime',
               '$plates_count','$plate_cost',
               '$total_amount','$services_amount','$grand_total',
-              '1','1','0','{$_SESSION['adminid']}')"
+              '1','1','0','2')"
         );
 
         mysqli_commit($conn);
