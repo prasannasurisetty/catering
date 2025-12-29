@@ -7,6 +7,11 @@ session_start();
 $jsondata = file_get_contents('php://input');
 $data = json_decode($jsondata, true);
 $load = $data["load"] ?? "";
+$orderdate = $data["orderdate"] ?? "";
+$ordertime = $data["ordertime"] ?? "";
+$customerid   = $data['customerid'] ?? null;
+$addressid    = $data['addressid'] ?? null;
+
 
 
 
@@ -16,15 +21,34 @@ if ($load == "savemenu") {
     cancelmenu($conn);
 } else if ($load == "allorders") {
     allorders($conn);
-} else if($load == "fetchmenu"){
+} else if ($load == "fetchmenu") {
     fetchmenu($conn);
-
 }
 
 function fetchmenu($conn)
 {
-    global $customerid,$addressid,$orderdate,$ordertime;
-    $sql = "SELECT * FROM `catering_orders` WHERE customer_id = '$customerid' AND address_id = '$addressid' AND order_date = '$orderdate' AND order_time = '$ordertime';";
+    global $customerid, $addressid, $orderdate, $ordertime;
+
+    $sql = "
+        SELECT 
+            co.order_count,
+            co.plate_cost,
+            co.total_amount,
+            cf.item_name,
+            cf.item_qty,
+            cs.services_name,
+            cs.services_cost
+        FROM catering_orders co
+        JOIN catering_fooditems cf ON cf.plate_id = co.plate_id
+        JOIN catering_services cs ON cs.services_id = co.services_id
+        WHERE co.customer_id = '$customerid'
+          AND co.address_id = '$addressid'
+          AND co.order_date = '$orderdate'
+          AND co.order_time = '$ordertime'
+          AND co.order_status = 1
+        GROUP BY cf.item_name, cf.item_qty, cs.services_name, cs.services_cost
+    ";
+
     $result = getData($conn, $sql);
 
     if (!empty($result)) {
@@ -42,9 +66,10 @@ function fetchmenu($conn)
     }
 }
 
+
 function allorders($conn)
 {
-    $sql = "SELECT * FROM catering_orders";
+    $sql = "SELECT * FROM catering_orders WHERE order_status = 1";
     $result = getData($conn, $sql);
 
     if (!empty($result)) {
@@ -68,13 +93,10 @@ function allorders($conn)
 
 function cancelmenu($conn)
 {
-    $data = json_decode(file_get_contents("php://input"), true);
+    global $customerid, $addressid, $orderdate, $ordertime;
 
-    $customerid = $data['customerid'] ?? null;
-    $addressid  = $data['addressid'] ?? null;
-    $orderdate  = $data['orderdate'] ?? null;
 
-    if (!$customerid || !$addressid || !$orderdate) {
+    if (!$customerid || !$addressid || !$orderdate || !$ordertime) {
         echo json_encode([
             "status" => "failed",
             "message" => "Missing required data"
@@ -88,6 +110,7 @@ function cancelmenu($conn)
         WHERE customer_id = '$customerid'
           AND address_id  = '$addressid'
           AND order_date  = '$orderdate'
+          AND order_time = '$ordertime'
     ";
 
     $result = setData($conn, $sql);

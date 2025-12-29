@@ -462,6 +462,10 @@ function loadAddress() {
                 if (selectedAddressId) {
                     highlightAddress(selectedAddressId);
                     const cid = document.querySelector(".customer_id")?.dataset.cid;
+                    if (cid) {
+                        fetchmenu(cid, selectedAddressId);
+
+                    }
 
                 }
 
@@ -718,7 +722,9 @@ function cancelOrder() {
 
     const customerid = document.querySelector(".customer_id")?.dataset.cid;
     const addressid = selectedAddressId;
-    const orderdate = document.querySelector('input[type="date"]').value;
+    var orderdate = $('#order-date').val();
+    var ordertime = $('#order-time').val();
+
 
     if (!customerid || !addressid || !orderdate) {
         alert("Missing order details");
@@ -729,12 +735,13 @@ function cancelOrder() {
         load: "cancelmenu",
         customerid: customerid,
         addressid: addressid,
-        orderdate: orderdate
+        orderdate: orderdate,
+        ordertime: ordertime,
     };
 
     $.ajax({
         type: "POST",
-        url: "./webservices/cateringservices.php",
+        url: "./webservices/catering.php",
         data: JSON.stringify(payload),
         contentType: "application/json",
         dataType: "json",
@@ -743,9 +750,8 @@ function cancelOrder() {
             if (response.status === "success") {
                 alert("Order cancelled successfully");
 
-                // Optional UI reset
-                document.getElementById("plate_order_section").style.display = "none";
-                document.getElementById("plate_preview").style.display = "none";
+                clearMenuUI();
+                fetchAllOrders();
             } else {
                 alert(response.message || "Failed to cancel order");
             }
@@ -763,11 +769,10 @@ function cancelOrder() {
 // right side div 
 
 function fetchAllOrders() {
-    console.log("fetch all orders");
+
     var payload = {
         load: "allorders"
     }
-    console.log("fetch all orders payload",payload);
 
     $.ajax({
         type: "POST",
@@ -776,7 +781,7 @@ function fetchAllOrders() {
         contentType: "application/json",
         dataType: "json",
         success: function (response) {
-            console.log("fetch all orders", response);
+
             const container = document.getElementById("ordersList");
             container.innerHTML = "";
 
@@ -807,21 +812,172 @@ function fetchAllOrders() {
 // Load on page open
 fetchAllOrders();
 
+function fetchmenu(customerid, addressid) {
 
-function fetchmenu($conn){
-    console.log("fetchmenu function");
-     var payload  = {
-        customerid : customerid,
-        addressid : addressid,
-        orderdate : orderdate,
-        ordertime : ordertime
-     }
-     console.log("fetchmenu function payload",payload);
 
-     $.ajax({
-        
-     })
+    // ✅ FIXED selectors
+    var orderdate = $('#order-date').val();
+    var ordertime = $('#order-time').val();
+
+    // 🔒 HARD GUARD
+    if (!customerid || !addressid || !orderdate || !ordertime) {
+        console.warn("Missing required data", {
+            customerid, addressid, orderdate, ordertime
+        });
+        return;
+    }
+
+    var payload = {
+        load: "fetchmenu",
+        customerid: customerid,
+        addressid: addressid,
+        orderdate: orderdate,
+        ordertime: ordertime
+    };
+
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/catering.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (response) {
+
+
+            if (response.code !== 200 || !Array.isArray(response.data) || response.data.length === 0) {
+                clearMenuUI();
+                return;
+            }
+
+            const rows = response.data;
+
+            /* ======================
+               ITEMS (GROUP & COUNT)
+            ====================== */
+            const foodMap = {};
+
+            rows.forEach(row => {
+                const name = row.item_name;
+                const qty = parseInt(row.item_qty) || 0;
+
+                foodMap[name] = (foodMap[name] || 0) + qty;
+            });
+
+            const textarea = document.getElementById("item-names");
+            textarea.value = "";
+
+            Object.entries(foodMap).forEach(([name, qty]) => {
+                textarea.value += `${name} (${qty})\n`;
+            });
+
+            /* ======================
+               SERVICES (UNIQUE)
+            ====================== */
+            const serviceMap = {};
+
+            rows.forEach(row => {
+                if (row.services_name) {
+                    serviceMap[row.services_name] = row.services_cost;
+                }
+            });
+
+            renderServices(
+                Object.entries(serviceMap).map(([name, cost]) => ({
+                    service_name: name,
+                    service_cost: cost
+                }))
+            );
+
+            /* ======================
+               PLATE INFO
+            ====================== */
+            const first = rows[0];
+
+            document.getElementById("plate_count").value = first.order_count;
+            document.getElementById("plate_price").value = first.plate_cost;
+            document.getElementById("total_amount").value = first.total_amount;
+
+            updateSummary();
+            updateGrandTotal();
+        },
+
+
+        error: function () {
+            alert("Server error");
+        }
+    });
 }
+
+function autoFetchOnDateTimeChange() {
+    console.log("function runnninggggg");
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+    const addressid = selectedAddressId;
+
+    const orderdate = $('#order-date').val();
+    const ordertime = $('#order-time').val();
+
+    // 🔒 Fetch ONLY when everything is selected
+    if (!customerid || !addressid || !orderdate || !ordertime) {
+        return;
+    }
+
+    fetchmenu(customerid, addressid);
+}
+
+// 🔁 Trigger when date or time changes
+$(document).on('change', '#order-date, #order-time', function () {
+    autoFetchOnDateTimeChange();
+});
+function renderServices(services = []) {
+    const container = document.getElementById("services_container");
+    container.innerHTML = "";
+
+    services.forEach(service => {
+        const row = document.createElement("div");
+        row.className = "service-row";
+
+        row.innerHTML = `
+            <input type="text" value="${service.service_name}" readonly>
+            <input type="number" class="service-cost" value="${service.service_cost}" readonly>
+            <button class="remove-service" disabled>
+                <i class="fa fa-trash"></i>
+            </button>
+        `;
+
+        container.appendChild(row);
+    });
+}
+
+function clearMenuUI() {
+
+    // Food items
+    const textarea = document.getElementById("item-names");
+    if (textarea) textarea.value = "";
+
+    // Plate info
+    document.getElementById("plate_count").value = "";
+    document.getElementById("plate_price").value = "";
+    document.getElementById("total_amount").value = "";
+    document.getElementById("grand_total").value = "";
+
+    // Services
+    const services = document.getElementById("services_container");
+    if (services) services.innerHTML = "";
+
+    // Optional: reset summary
+    updateGrandTotal();
+
+}
+
+
+
+
+
+
+
+
 
 
 

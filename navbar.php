@@ -291,7 +291,7 @@
 <body>
 
   <div class="navbar">
-    <div class="logo"><a href="home.php"><img src="images/logo.png" alt="" srcset=""></a></div>
+    <div class="logo"><a href="catering.php"><img src="images/logo.png" alt="" srcset=""></a></div>
    
 
 

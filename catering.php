@@ -59,11 +59,11 @@
                         <div class="plate-box">
                             <div class="plate-row">
                                 <label>Date:</label>
-                                <input type="date">
+                                <input type="date" id="order-date">
                             </div>
                             <div class="plate-row">
                                 <label>Time:</label>
-                                <input type="time">
+                                <input type="time" id="order-time">
                             </div>
 
                         </div>
@@ -129,8 +129,8 @@
                                 <input type="number" id="grand_total" readonly>
                             </div>
                             <div class="plate-button">
-                                <button id="save-menu">Save</button>
-                                <button id="cancel-menu">Cancel</button>
+                                <button id="save-menu">Save Menu</button>
+                                <button id="cancel-menu">Cancel Menu</button>
                             </div>
                         </div>
 

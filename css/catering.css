@@ -21,6 +21,10 @@
     font-family: "Calibri Light", Calibri, sans-serif;
 }
 
+.fixed-container h3 {
+    color: var(--color-blue);
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -346,7 +350,7 @@ body {
 .plate_preview {
     display: flex;
     flex-direction: column;
-    gap:10px;
+    gap: 10px;
 }
 
 .plate-box {
@@ -548,7 +552,7 @@ body {
 }
 
 #save-menu {
-    width: 60px;
+    width: 100px;
     height: 5vh;
     background-color: var(--color-dark);
     color: white;
@@ -559,7 +563,7 @@ body {
 }
 
 #cancel-menu {
-    width: 60px;
+    width: 100px;
     height: 5vh;
     background-color: red;
     color: white;
@@ -597,7 +601,7 @@ body {
 
 
 .fixed-container {
-    
+
     width: 30%;
     height: 91vh;
     position: fixed;
@@ -620,7 +624,8 @@ body {
 .order-card h4 {
     margin: 0 0 5px;
     font-size: 15px;
-    
+    color: var(--color-blue);
+
 }
 
 .order-card p {
@@ -634,9 +639,9 @@ body {
     /* 2 cards per row */
     gap: 10px;
     /* border : 2px solid #e0e0e0; */
-    margin:3px;
+    margin: 3px;
 
-  
+
 }
 
 .order-card {
