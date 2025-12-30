@@ -21,9 +21,9 @@
     font-family: "Calibri Light", Calibri, sans-serif;
 }
 
-.fixed-container h3 {
+/* .fixed-container h3 {
     color: var(--color-blue);
-}
+} */
 
 body {
     margin: 0;
@@ -515,7 +515,7 @@ body {
 #item-names {
     border: 2px solid grey;
     width: 97%;
-    height: 43vh;
+    height: 38vh;
     font-size: medium;
     font-weight: bold;
     border-radius: 6px;
@@ -650,4 +650,16 @@ body {
     padding: 8px;
     background: #ffffff;
     font-size: 13px;
+}
+
+#duplicate-warning {
+    margin-top: 6px;
+    font-size: 14px;
+    color: red;
+    font-weight: bold;
+
+    min-height: 20px;
+    /* reserve space */
+    visibility: hidden;
+    /* hidden but space kept */
 }

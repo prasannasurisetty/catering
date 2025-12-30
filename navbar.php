@@ -316,13 +316,13 @@
       </div>
 
       <div class="menu-item">
-        KOT Management ▾
-        <ul class="submenu">
+        Billing 
+        <!-- <ul class="submenu">
           <li><a href="kot.php">KOT</a></li>
             <li><a href="orderreview.php">Return Orders</a></li>
           <li><a href="billing.php">Billing</a></li>
           <li><a href="summary.php">Reports</a></li>
-        </ul>
+        </ul> -->
       </div>
     </div>
 

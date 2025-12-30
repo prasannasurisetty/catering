@@ -70,7 +70,10 @@
                         <span id="heading-info">Items Info</span>
 
                         <div class="plate-menu">
+
                             <textarea id="item-names" placeholder="Enter Item Names Here...."></textarea>
+                            <p id="duplicate-warning"></p>
+
 
                         </div>
 
@@ -130,6 +133,7 @@
                             </div>
                             <div class="plate-button">
                                 <button id="save-menu">Save Menu</button>
+                                <button id="set" onclick="setpaymentvariables();">Set</button>
                                 <button id="cancel-menu">Cancel Menu</button>
                             </div>
                         </div>
@@ -145,7 +149,9 @@
             </div>
         </div>
         <div class="fixed-container">
-           <center> <h3>All Orders</h3> </center>
+            <center>
+                <h3>All Orders</h3>
+            </center>
             <div id="ordersList"></div>
         </div>
 

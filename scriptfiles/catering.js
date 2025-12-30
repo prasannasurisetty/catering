@@ -606,30 +606,13 @@ function saveCateringOrder() {
     const fooditems = [];
     const itemsText = document.getElementById("item-names").value.trim();
 
-    if (!itemsText) {
-        alert("Enter food items");
-        return;
-    }
-
     itemsText.split("\n").forEach(line => {
         const val = line.trim();
-        if (!val) return;
-
-        let name = val;
-        let qty = 1;
-
-        // Support format: item-qty (e.g., vada-2)
-        if (val.includes("-")) {
-            const parts = val.split("-");
-            name = parts[0].trim();
-            qty = parseInt(parts[1], 10) || 1;
+        if (val) {
+            fooditems.push(val); // 🔥 store raw text
         }
-
-        fooditems.push({
-            name: name,
-            qty: qty
-        });
     });
+
 
     if (!fooditems.length) {
         alert("No valid food items found");
@@ -684,6 +667,7 @@ function saveCateringOrder() {
         success: function (response) {
             if (response.status === "success") {
                 alert("Order saved successfully");
+                fetchAllOrders();
 
                 // RESET FORM
                 document.getElementById("item-names").value = "";
@@ -705,12 +689,127 @@ function saveCateringOrder() {
     });
 }
 
+function updateOrder() {
+
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+    const addressid = selectedAddressId;
+    const orderdate = $('#order-date').val();
+    const ordertime = $('#order-time').val();
+
+    const plate_count = Number(document.getElementById("plate_count").value) || 0;
+    const plate_cost = Number(document.getElementById("plate_price").value) || 0;
+    const total_amount = Number(document.getElementById("total_amount").value) || 0;
+    const grand_total = Number(document.getElementById("grand_total").value) || 0;
+
+    /* ===== FOOD ITEMS ===== */
+    /* ===== FOOD ITEMS (RAW STRINGS ONLY) ===== */
+    const fooditems = getItemsFromTextarea(); // already returns string[]
+
+    // getItemsFromTextarea().forEach(line => {
+
+    //     let name = line;
+    //     let qty = 1;
+
+    //     if (line.includes("-")) {
+    //         const parts = line.split("-");
+    //         name = parts[0].trim();
+    //         qty = parseInt(parts[1], 10) || 1;
+    //     }
+
+    //     fooditems.push({ name, qty });
+    // });
+
+    /* ===== SERVICES ===== */
+    const services = [];
+    document.querySelectorAll("#services_container .service-row").forEach(row => {
+        const name = row.querySelector("input[type='text']")?.value.trim();
+        const cost = Number(row.querySelector(".service-cost")?.value) || 0;
+
+        if (name) {
+            services.push({ name, cost });
+        }
+    });
+
+    const payload = {
+        load: "updateorder",
+        customerid,
+        addressid,
+        orderdate,
+        ordertime,
+        plates_count: plate_count,
+        plate_cost,
+        total_amount,
+        grand_total,
+        fooditems,
+        services
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/catering.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (res) {
+            if (res.status === "success") {
+                alert("Order updated successfully");
+                fetchAllOrders();
+            } else {
+                alert(res.message || "Update failed");
+            }
+        },
+
+        error: function () {
+            alert("Server error while updating order");
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+
     const saveBtn = document.getElementById("save-menu");
-    if (saveBtn) {
-        saveBtn.addEventListener("click", saveCateringOrder);
+
+    if (!saveBtn) {
+        console.error("Save button (#save-menu) not found");
+        return;
     }
+
+    saveBtn.addEventListener("click", function () {
+
+        const payload = {
+            load: "checkorder",
+            customerid: document.querySelector(".customer_id")?.dataset.cid,
+            addressid: selectedAddressId,
+            orderdate: $('#order-date').val(),
+            ordertime: $('#order-time').val()
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "./webservices/catering.php",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+
+            success: function (res) {
+                if (res.exists) {
+                    updateOrder();        // 🔁 UPDATE
+                } else {
+                    saveCateringOrder();  // 💾 SAVE
+                }
+            },
+
+            error: function () {
+                alert("Error checking order");
+            }
+        });
+    });
+
 });
+
+
+
 
 document.getElementById("cancel-menu").addEventListener("click", cancelOrder);
 
@@ -856,21 +955,27 @@ function fetchmenu(customerid, addressid) {
             /* ======================
                ITEMS (GROUP & COUNT)
             ====================== */
-            const foodMap = {};
+            // const foodMap = {};
 
-            rows.forEach(row => {
-                const name = row.item_name;
-                const qty = parseInt(row.item_qty) || 0;
+            // rows.forEach(row => {
+            //     const name = row.item_name;
+            //     const qty = parseInt(row.item_qty) || 0;
 
-                foodMap[name] = (foodMap[name] || 0) + qty;
-            });
+            //     foodMap[name] = (foodMap[name] || 0) + qty;
+            // });
 
             const textarea = document.getElementById("item-names");
             textarea.value = "";
 
-            Object.entries(foodMap).forEach(([name, qty]) => {
-                textarea.value += `${name} (${qty})\n`;
+            const uniqueItems = new Set();
+            response.data.forEach(row => {
+                if (row.item) uniqueItems.add(row.item);
             });
+
+            uniqueItems.forEach(item => {
+                textarea.value += item + "\n";
+            });
+
 
             /* ======================
                SERVICES (UNIQUE)
@@ -939,9 +1044,11 @@ function renderServices(services = []) {
         row.className = "service-row";
 
         row.innerHTML = `
-            <input type="text" value="${service.service_name}" readonly>
-            <input type="number" class="service-cost" value="${service.service_cost}" readonly>
-            <button class="remove-service" disabled>
+            <input type="text" value="${service.service_name}">
+            <input type="number" class="service-cost"
+                   value="${service.service_cost}"
+                   oninput="updateGrandTotal()">
+            <button class="remove-service" onclick="removeServiceRow(this)">
                 <i class="fa fa-trash"></i>
             </button>
         `;
@@ -949,6 +1056,7 @@ function renderServices(services = []) {
         container.appendChild(row);
     });
 }
+
 
 function clearMenuUI() {
 
@@ -970,6 +1078,67 @@ function clearMenuUI() {
     updateGrandTotal();
 
 }
+
+
+
+
+function setpaymentvariables() {
+    // localstorage variables
+    const grandtotal = Number(document.getElementById("grand_total").value) || 0;
+    const orderdate = document.querySelector("input[type='date']").value;
+    const ordertime = document.querySelector("input[type='time']").value;
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+
+    const addressid =
+        document.querySelector('.address_block.highlight-address')
+            ?.getAttribute("data-block-aid");
+
+
+
+    localStorage.setItem("customerid", customerid);
+    localStorage.setItem("addressid", addressid);
+    localStorage.setItem("orderdate", orderdate);
+    localStorage.setItem("ordertime", ordertime);
+    localStorage.setItem("grandtotal", grandtotal);
+
+}
+
+
+
+
+document.getElementById("item-names").addEventListener("input", function () {
+    const lines = this.value
+        .split("\n")
+        .map(line => line.trim().toLowerCase())
+        .filter(Boolean);
+
+    const seen = new Set();
+    const duplicates = new Set();
+
+    lines.forEach(item => {
+        if (seen.has(item)) {
+            duplicates.add(item);
+        }
+        seen.add(item);
+    });
+
+    const warningEl = document.getElementById("duplicate-warning");
+
+    if (duplicates.size > 0) {
+        warningEl.style.visibility = "visible";
+
+        warningEl.textContent =
+            "Duplicate item found: " + Array.from(duplicates).join(", ");
+    } else {
+        warningEl.style.visibility = "hidden";
+
+        warningEl.textContent = "";
+    }
+});
+
+
+
+
 
 
 
