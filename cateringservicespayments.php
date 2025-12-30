@@ -84,43 +84,16 @@
                     </div>
                 </div>
                 <div class="order-utensils contain">
-                    <div class="card">
-                        <h3>🍽️ Utensils</h3>
+                    <div class="utensils-order">
+                        <div class="add-utensils-text" onclick="addUtensilRow()">
+                            <i class="fa fa-plus"></i> Add Utensil
+                        </div>
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Utensil</th>
-                                    <th>Issued</th>
-                                    <th>Returned</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Plates</td>
-                                    <td>200</td>
-                                    <td>180</td>
-                                    <td class="pending">20 Pending</td>
-                                </tr>
-                                <tr>
-                                    <td>Glasses</td>
-                                    <td>200</td>
-                                    <td>200</td>
-                                    <td class="ok">Returned</td>
-                                </tr>
-                                <tr>
-                                    <td>Buckets</td>
-                                    <td>5</td>
-                                    <td>4</td>
-                                    <td class="pending">1 Pending</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <br>
-                        <button class="btn btn-save">Save Utensils</button>
+                        <div id="utensils_container">
+                            <!-- utensil rows here -->
+                        </div>
                     </div>
+
 
                 </div>
             </div>
@@ -550,6 +523,32 @@
         // Load on page open
         fetchAllOrders();
         fetchbyid(customerid);
+
+
+        function addUtensilRow(item = "", issued = "", returned = "") {
+            const container = document.getElementById("utensils_container");
+
+            const row = document.createElement("div");
+            row.className = "utensil-row";
+
+            row.innerHTML = `
+        <input type="text" placeholder="Enter Item Name" value="${item}">
+        <input type="number" placeholder="Issued Qty" value="${issued}">
+        <input type="number" placeholder="Returned Qty" value="${returned}">
+        <i class="fa fa-trash remove-utensil" onclick="removeUtensilRow(this)"></i>
+    `;
+
+            container.appendChild(row);
+        }
+
+        // default one row
+        document.addEventListener("DOMContentLoaded", function() {
+            addUtensilRow();
+        });
+
+        function removeUtensilRow(el) {
+            el.parentElement.remove();
+        }
     </script>
 </body>
 

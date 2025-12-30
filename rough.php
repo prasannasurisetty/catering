@@ -15,145 +15,6 @@
     <link rel=" stylesheet" type="text/css" href="css/cateringservicespayments.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="scriptfiles/cateringservices.js" defer></script>
-    <style>
-        .payment-details {
-            /* border: 2px solid blue; */
-            border-radius: 5px;
-            width: 100%;
-            height: 75vh;
-        }
-
-        .payment-details {
-            width: 100%;
-            max-width: 380px;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 14px 16px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            color: #333;
-        }
-
-        /* Order Date */
-        .payment-date {
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 8px;
-        }
-
-        /* Separator line */
-        .payment-details hr {
-            border: none;
-            border-top: 1px dashed #ccc;
-            margin: 8px 0;
-        }
-
-
-        .payment-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-        }
-
-        .payment-row span:first-child {
-            letter-spacing: 0.4px;
-        }
-
-
-        .payment-row span:last-child {
-            font-weight: 600;
-        }
-
-        .payment-grand-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-            font-weight: 700;
-            color: #000;
-            margin-top: 6px;
-        }
-
-
-
-        .container-2 {
-            background: #ffffff;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
-            box-shadow: rgba(0, 0, 0, 0.08) 0px 2px 6px;
-        }
-
-
-
-
-        .container-2 input[type=number]::-webkit-inner-spin-button,
-        .container-2 input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-
-
-
-        .payment-details,
-        .payment-history {
-            background: #ffffff;
-            border: 1px solid #dcdcdc;
-            border-radius: 6px;
-            padding: 16px;
-            box-shadow: rgba(0, 0, 0, 0.08) 0px 2px 6px;
-            font-size: 16px;
-        }
-
-
-        .payment-date {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .payment-details hr {
-            border: none;
-            border-top: 1px dashed #bbb;
-            margin: 10px 0;
-        }
-
-
-        .payment-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 2px;
-        }
-
-        .payment-row span:first-child {
-            font-weight: 600;
-            letter-spacing: 0.6px;
-            color: #222;
-        }
-
-
-        .payment-row span:last-child {
-            font-weight: 600;
-            color: #000;
-        }
-
-
-        .payment-grand-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-            font-weight: 700;
-            padding-top: 6px;
-            color: #000;
-        }
-
-        .payment-grand-total span:last-child {
-            color: #0a8a2a;
-        }
-    </style>
 
 </head>
 
@@ -167,6 +28,10 @@
                 <p class="customer_id"></p>
                 <p class="customer_name"></p>
                 <p class="customer_ph"></p>
+                <p class="orderdate"></p>
+                <p class="ordertime"></p>
+                <p class="grandtotal"></p>
+
                 <!-- <p class="register_button" onclick="setRedirectVariable()">
                     <a href="userregistration.php">
                         <i class="fa-regular fa-user" style="color:white"></i>
@@ -176,99 +41,150 @@
 
 
         </div>
+        <div class="order-details">
+            <div class="payment-container">
+                <div class="order-payments contain">
+                    <div class="payment subcontain">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <label><b>Total Amount:</b></label>
+                                <input type="number" id="total_amount" placeholder="Total Amount" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Paid Amount:</label>
+                                <input type="number" id="paid_amount" placeholder="0">
+                            </div>
+                            <div class="form-row">
+                                <label>Balance Amount:</label>
+                                <input type="number" id="balance_amount" placeholder="0" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Paymode:</label>
+                                <select id="pay_mode">
+                                    <option value="">Select Type</option>
+                                    <option value="1">Cash</option>
+                                    <option value="2">Card</option>
+                                    <option value="3">UPI</option>
 
-        <div class="payment-container">
-            <div class="container-1 contain">
-                <div class="payment-heading">
-                    <center>
-                        <h2>Payment Summary</h2>
-                    </center>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <label>Pay Date:</label>
+                                <input type="date" id="pay_date">
+                            </div>
+                            <div class="form-row">
+                                <button type="button" onclick="savepayment()">Pay</button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="payment-history subcontain">
+
+                    </div>
                 </div>
-                <div class="payment-details">
+                <div class="order-utensils contain">
+                    <div class="card">
+                        <h3>🍽️ Utensils</h3>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Utensil</th>
+                                    <th>Issued</th>
+                                    <th>Returned</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Plates</td>
+                                    <td>200</td>
+                                    <td>180</td>
+                                    <td class="pending">20 Pending</td>
+                                </tr>
+                                <tr>
+                                    <td>Glasses</td>
+                                    <td>200</td>
+                                    <td>200</td>
+                                    <td class="ok">Returned</td>
+                                </tr>
+                                <tr>
+                                    <td>Buckets</td>
+                                    <td>5</td>
+                                    <td>4</td>
+                                    <td class="pending">1 Pending</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <button class="btn btn-save">Save Utensils</button>
+                    </div>
 
                 </div>
-
             </div>
-            <div class="container-2 contain">
-                <div class="payment-heading">
-                    <center>
-                        <h2>Payment Details</h2>
-                    </center>
-                </div>
-                <div class="form-group">
-                    <div class="form-row">
-                        <label><b>Total Amount:</b></label>
-                        <input type="number" id="total_amount" placeholder="Total Amount">
-                    </div>
-                    <div class="form-row">
-                        <label>Paid Amount:</label>
-                        <input type="number" id="paid_amount" placeholder="0">
-                    </div>
-                    <div class="form-row">
-                        <label>Balance Amount:</label>
-                        <input type="number" id="balance_amount" placeholder="0">
-                    </div>
-                    <div class="form-row">
-                        <label>Paymode:</label>
-                        <select id="pay_mode">
-                            <option value="">Select Type</option>
-                            <option value="1">Cash</option>
-                            <option value="2">Card</option>
-                            <option value="3">UPI</option>
-
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label>Pay Date:</label>
-                        <input type="date" id="pay_date">
-                    </div>
-                    <div class="form-row">
-                        <button type="button" onclick="savepayment()">Pay</button>
-
-                    </div>
-
-                </div>
-            </div>
-            <div class="container-3 contain">
-                <div class="payment-heading">
-                    <center>
-                        <h2>Payment History</h2>
-                    </center>
-                </div>
-                <div class="payment-history"></div>
+            <div class="fixed-container">
+                <!-- <center> <h3>All Orders</h3> </center> -->
+                <div id="ordersList"></div>
             </div>
         </div>
 
     </div>
 
     <script>
+        let alreadyPaidAmount = 0;
+
         var customerid = localStorage.getItem('customerid');
         var addressid = localStorage.getItem('addressid');
-        var fetchdate = localStorage.getItem('fetchdate');
-        console.log("printtt", customerid, addressid, fetchdate);
+        var orderdate = localStorage.getItem('orderdate');
+        var ordertime = localStorage.getItem('ordertime');
+        var grandtotal = localStorage.getItem('grandtotal');
+
+        console.log("printtt", customerid, addressid, orderdate, ordertime, grandtotal);
+
+
+        $(document).ready(function() {
+
+            if (!customerid || !addressid || !orderdate || !ordertime) {
+                alert("Invalid order context. Please go back and select order again.");
+                return;
+            }
+
+            // ✅ SET TOTAL AMOUNT FROM LOCALSTORAGE
+            // $('#total_amount').val(grandtotal);
+            fetchTotalAmount();
+
+            // paymentdetails();
+            paymenthistory();
+            fetchbyid(customerid);
+        });
 
         $('#paid_amount').on('input', function() {
-            let totalamount = Number($('#total_amount').val());
-            let paidamount = Number($('#paid_amount').val());
+            let totalamount = Number($('#total_amount').val()) || 0;
+            let paidamount = Number($(this).val()) || 0;
 
+            let balance = totalamount - (alreadyPaidAmount + paidamount);
 
-            let balance = totalamount - paidamount;
+            // ❌ Do not allow negative balance
+            if (balance < 0) {
+                balance = 0;
+            }
+
             $('#balance_amount').val(balance);
         });
 
 
-
-        function paymentdetails() {
-            // console.log("1.paymentdetails function");
-
-            var payload = {
-                load: "paymentdetails",
+        function fetchTotalAmount() {
+            console.log("1");
+            const payload = {
+                load: "fetchtotalamount",
                 customerid: customerid,
                 addressid: addressid,
-                orderdate: fetchdate
+                orderdate: orderdate,
+                ordertime: ordertime
             };
-
-            // console.log("2.paymentdetails function payload", payload);
+            console.log("1 payload", payload);
 
             $.ajax({
                 type: "POST",
@@ -277,68 +193,111 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function(response) {
+                    console.log("1 response", response);
+                    if (response.status === "success") {
 
-                    const paymentdetailsdiv = document.querySelector(".payment-details");
-                    paymentdetailsdiv.innerHTML = "";
+                        // ✅ FIXED KEY NAME
+                        let totalAmount = Number(response.totalamount) || 0;
 
-                    if (response.status !== "success" || !Array.isArray(response.data) || response.data.length === 0) {
-                        paymentdetailsdiv.innerHTML = "<p>No payment details found.</p>";
-                        return;
+                        $('#total_amount').val(totalAmount);
+
+                        // let balance = totalAmount - alreadyPaidAmount;
+                        // $('#balance_amount').val(balance);
                     }
-
-                    let grandTotal = 0;
-                    const orderDate = response.data[0].order_date;
-
-
-                    const dateDiv = document.createElement("div");
-                    dateDiv.className = "payment-date";
-                    dateDiv.innerHTML = `<b>Order Date :</b> ${orderDate}`;
-                    paymentdetailsdiv.appendChild(dateDiv);
-
-                    paymentdetailsdiv.appendChild(document.createElement("hr"));
-
-                    response.data.forEach(row => {
-                        const amount = parseFloat(row.total_amount) || 0;
-                        grandTotal += amount;
-
-                        const rowDiv = document.createElement("div");
-                        rowDiv.className = "payment-row";
-
-                        rowDiv.innerHTML = `
-                    <span><b>${row.type.toUpperCase()}</b></span>
-                   <span>₹ ${amount.toFixed(2)}</span>
-                    `;
-
-                        paymentdetailsdiv.appendChild(rowDiv);
-                    });
-
-                    paymentdetailsdiv.appendChild(document.createElement("hr"));
-
-                    // ✅ Grand Total
-                    const totalDiv = document.createElement("div");
-                    totalDiv.className = "payment-grand-total";
-                    totalDiv.innerHTML = `<b>GRAND TOTAL :</b> ₹ ${grandTotal.toFixed(2)}`;
-
-                    paymentdetailsdiv.appendChild(totalDiv);
                 },
-
-
                 error: function() {
-                    alert("Server error while fetching details");
+                    alert("Error fetching total amount");
                 }
             });
         }
 
+
+
+
+
+        // function paymentdetails() {
+
+
+        //     var payload = {
+        //         load: "paymentdetails",
+        //         customerid: customerid,
+        //         addressid: addressid,
+        //         orderdate: orderdate,
+        //         ordertime : ordertime
+        //     };
+
+
+
+        //     $.ajax({
+        //         type: "POST",
+        //         url: "./webservices/cateringservicespayments.php",
+        //         data: JSON.stringify(payload),
+        //         contentType: "application/json",
+        //         dataType: "json",
+        //         success: function(response) {
+
+        //             const paymentdetailsdiv = document.querySelector(".payment-details");
+        //             paymentdetailsdiv.innerHTML = "";
+
+        //             if (response.status !== "success" || !Array.isArray(response.data) || response.data.length === 0) {
+        //                 paymentdetailsdiv.innerHTML = "<p>No payment details found.</p>";
+        //                 return;
+        //             }
+
+        //             let grandTotal = 0;
+        //             const orderDate = response.data[0].order_date;
+
+
+        //             const dateDiv = document.createElement("div");
+        //             dateDiv.className = "payment-date";
+        //             dateDiv.innerHTML = `<b>Order Date :</b> ${orderDate}`;
+        //             paymentdetailsdiv.appendChild(dateDiv);
+
+        //             paymentdetailsdiv.appendChild(document.createElement("hr"));
+
+        //             response.data.forEach(row => {
+        //                 const amount = parseFloat(row.total_amount) || 0;
+        //                 grandTotal += amount;
+
+        //                 const rowDiv = document.createElement("div");
+        //                 rowDiv.className = "payment-row";
+
+        //                 rowDiv.innerHTML = `
+        //             <span><b>${row.type.toUpperCase()}</b></span>
+        //            <span>₹ ${amount.toFixed(2)}</span>
+        //             `;
+
+        //                 paymentdetailsdiv.appendChild(rowDiv);
+        //             });
+
+        //             paymentdetailsdiv.appendChild(document.createElement("hr"));
+
+
+        //             const totalDiv = document.createElement("div");
+        //             totalDiv.className = "payment-grand-total";
+        //             totalDiv.innerHTML = `<b>GRAND TOTAL :</b> ₹ ${grandTotal.toFixed(2)}`;
+
+        //             paymentdetailsdiv.appendChild(totalDiv);
+        //         },
+
+
+        //         error: function() {
+        //             alert("Server error while fetching details");
+        //         }
+        //     });
+        // }
+
         $(document).ready(function() {
-            paymentdetails();
+            // paymentdetails();
             paymenthistory();
             fetchbyid(customerid);
         });
 
 
 
+
         function savepayment() {
-            // console.log("1.save function");
+            console.log("1.save payment function");
 
             if (
                 !$('#paid_amount').val() ||
@@ -349,16 +308,17 @@
                 return;
             }
 
-            var payload = {
+            const payload = {
                 load: "savepayment",
                 customerid: customerid,
                 addressid: addressid,
-                paidamount: $('#paid_amount').val(),
+                orderdate: orderdate, // ✅ REQUIRED
+                ordertime: ordertime, // ✅ REQUIRED
+                paidamount: Number($('#paid_amount').val()),
                 paymode: $('#pay_mode').val(),
                 paydate: $('#pay_date').val()
             };
-
-            // console.log("2.save function payload", payload);
+            console.log("1.save payment function payload", payload);
 
             $.ajax({
                 type: "POST",
@@ -368,14 +328,26 @@
                 dataType: "json",
 
                 success: function(response) {
-                    // console.log("3.save function response", response);
+                    console.log("1.save payment function response", response);
 
                     if (response && response.status === "success") {
+
                         alert("Payment successful");
+
+                        // ✅ UPDATE TOTALS
+                        $('#total_amount').val(response.grand_total ?? $('#total_amount').val());
+                        $('#paid_amount').val("");
+                        // $('#balance_amount').val(
+                        //     Number($('#total_amount').val()) - (response.paid_amount ?? 0)
+                        // );
+
+                        // 🔁 REFRESH HISTORY
+                        paymenthistory();
+                        fetchTotalAmount();
+
                     } else {
                         alert(response.message || "Payment failed");
                     }
-                    paymenthistory();
                 },
 
                 error: function(xhr, status, error) {
@@ -386,6 +358,7 @@
         }
 
 
+
         function paymenthistory() {
             // console.log("1.paymenthistory");
 
@@ -393,7 +366,7 @@
                 load: "paymenthistory",
                 customerid: customerid,
                 addressid: addressid,
-                orderdate: fetchdate
+                orderdate: orderdate
             };
 
             // console.log("2.paymenthistory payload", payload);
@@ -406,7 +379,6 @@
                 dataType: "json",
 
                 success: function(response) {
-                    // console.log("3.paymenthistory response", response);
 
                     const paymenthistorydiv = document.querySelector('.payment-history');
                     paymenthistorydiv.innerHTML = "";
@@ -421,21 +393,33 @@
                         return;
                     }
 
+                    // ✅ ADD
+                    alreadyPaidAmount = 0;
 
                     response.data.forEach((row, index) => {
+
+                        // ✅ ADD
+                        alreadyPaidAmount += Number(row.paid_amount) || 0;
+
                         const div = document.createElement("div");
                         div.className = "payment-history-row";
 
                         div.innerHTML = `
-                    <span>${index + 1}.</span>
-                    <span><b>Paid Date:</b>${row.paid_date}</span>,
-                    <span><b>Paid Amount:</b>₹${row.paid_amount}</span>,
-                    <span><b>Pay Mode:</b>${row.pay_mode}</span>
-                `;
+            <span>${index + 1}.</span>
+            <span><b>Paid Date:</b>${row.paid_date}</span>,
+            <span><b>Paid Amount:</b>₹${row.paid_amount}</span>,
+            <span><b>Pay Mode:</b>${row.pay_mode}</span>
+           `;
 
                         paymenthistorydiv.appendChild(div);
                     });
+
+                    // ✅ ADD
+                    let totalamount = Number($('#total_amount').val()) || 0;
+                    // let balance = totalamount - alreadyPaidAmount;
+                    // $('#balance_amount').val(balance);
                 },
+
 
                 error: function(xhr, status, error) {
                     console.error("Payment history error:", error);
@@ -469,6 +453,10 @@
                         const idEl = document.querySelector(".customer_id");
                         const nameEl = document.querySelector(".customer_name");
                         const phEl = document.querySelector(".customer_ph");
+                        const odE1 = document.querySelector(".orderdate");
+                        const otE1 = document.querySelector(".ordertime");
+                        const gtE1 = document.querySelector(".grandtotal");
+
 
                         if (idEl) {
                             idEl.textContent = `ID :${customer.CustomerID}`;
@@ -481,9 +469,19 @@
                         if (phEl) {
                             phEl.textContent = `PH Number :${customer.Phone1}`;
                         }
+                        if (odE1) {
+                            odE1.textContent = `Order Date : ${orderdate}`;
+                        }
+                        if (otE1) {
+                            otE1.textContent = `Order Time : ${ordertime}`;
+                        }
+                        if (gtE1) {
+                            gtE1.textContent = `Grand Total : ${grandtotal}`;
+                        }
+
 
                         // Load addresses for this customer
-                        loadAddress();
+                        // loadAddress();
 
 
 
@@ -505,6 +503,53 @@
                 },
             });
         }
+
+        function fetchAllOrders() {
+
+            var payload = {
+                load: "allorders"
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "./webservices/catering.php",
+                data: JSON.stringify(payload),
+                contentType: "application/json",
+                dataType: "json",
+                success: function(response) {
+
+                    const container = document.getElementById("ordersList");
+                    container.innerHTML = "";
+
+                    if (response.code !== 200 || !response.data) {
+                        container.innerHTML = "<p>No orders found</p>";
+                        return;
+                    }
+
+                    response.data.forEach(order => {
+                        const div = document.createElement("div");
+                        div.className = "order-card";
+                        div.innerHTML = `
+                    <h4>Order - ${order.order_id}</h4>
+                    <p><b>Customer:</b> ${order.customer_id}</p>
+                    <p><b>Address:</b> ${order.address_id}</p>
+                    <p><b>Date:</b> ${order.order_date}</p>
+                    <p><b>Total:</b> ₹${order.grand_total}</p>
+                `;
+                        container.appendChild(div);
+                    });
+                },
+                error: function() {
+                    alert("Error loading orders");
+                }
+            });
+        }
+
+
+
+        // Load on page open
+        fetchAllOrders();
+        fetchbyid(customerid);
     </script>
 </body>
 
