@@ -364,17 +364,46 @@ table th {
     text-align: center;
 }
 
-.remove-utensil {
+#remove-utensil {
     cursor: pointer;
     color: red;
     font-size: 19px;
 }
 
+.utensils-order {
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+    /* total block height */
+    background: #fff;
+}
+
+/* scrolling happens ONLY here */
 #utensils_container {
-    max-height: 550px;
-    /* or 200px – choose what fits your UI */
+    flex: 1;
+    /* take remaining space */
     overflow-y: auto;
     scrollbar-width: thin;
-    /* Firefox */
-    /* padding-right: 4px; */
+    padding-right: 6px;
+
+}
+
+/* footer stays visible */
+.utensils-footer {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: #fff;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.save-utensils-btn {
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 6px;
+    border: none;
+    background: var(--color-dark);
+    color: #fff;
+    cursor: pointer;
 }
