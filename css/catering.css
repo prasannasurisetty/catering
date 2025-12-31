@@ -42,7 +42,7 @@ body {
 
 .container {
     /* border : 2px solid yellowgreen; */
-    width: 70%;
+    width: 75%;
     height: 91vh;
 }
 
@@ -145,7 +145,7 @@ body {
 }
 
 .customer_delivery_addresses {
-    height: 175px;
+    height: 180px;
     width: 100%;
     /* border: 2px solid yellow; */
     border: 2px solid #e3e9f2;
@@ -353,20 +353,20 @@ body {
     gap: 10px;
 }
 
-.plate-box {
+/* .plate-box {
     width: 100%;
     height: 5vh;
-    /* border: 2px solid yellow; */
+    /* border: 2px solid yellow;
     display: flex;
     flex-direction: row;
-}
+} */
 
 .plate-row {
     /* border: 1px solid green; */
     width: 40%;
     height: 38px;
     display: flex;
-    gap: 10px;
+    gap: 1px;
     justify-content: center;
     align-items: center;
     padding: 5px;
@@ -383,16 +383,38 @@ body {
 }
 
 .plate-row input {
-    width: 100px;
+    width: 90px;
     height: 25px;
     border: 1px solid grey;
     border-radius: 4px;
 
 }
 
+.plate-info {
+    width: 100%;
+    height: 5vh;
+    display: none;
+    flex-direction: row;
+    background-color: #ffffff;
+    padding: 10px 0px 10px 0px;
+    gap:5px;
+
+}
+
+#heading {
+    display: flex;
+    width: 100%;
+    height: 5vh;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 19px;
+    margin: 3px;
+    color: var(--color-blue);
+}
+
 .order-menu {
     width: 100%;
-    height: 62vh;
+    height: 52vh;
     /* border: 2px solid brown; */
     display: flex;
     flex-direction: row;
@@ -410,7 +432,7 @@ body {
 
 .catering-ordering {
     /* border: 2px solid green; */
-    width: 100%;
+    width: 99%;
     height: 85vh;
     display: flex;
     flex-direction: column;
@@ -449,14 +471,13 @@ body {
 .services-order {
     background: #ffffff;
     border-radius: 12px;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 90%;
     /* border: 2px solid grey; */
-    height: 180px;
-
+    height: 185px;
     margin-top: 13px;
 }
 
@@ -522,9 +543,10 @@ body {
     height: 5vh;
     justify-content: center;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 18px;
     margin: 3px;
     color: var(--color-blue);
+    margin-top: 17px;
 }
 
 .plate-button {
@@ -546,33 +568,36 @@ body {
     /* justify-content: flex-end; */
     align-items: center;
 }
-.buttons-total{
-      width: 50%;
+
+.buttons-total {
+    align-self: end;
+    width: 50%;
     height: 8vh;
+    gap:20px;
     display: flex;
     flex-direction: row;
-    justify-content:space-around ;
+    justify-content: space-around;
     align-items: center;
 }
 
 .grand-total label {
-    font-size: 16px;
+    font-size: 19px;
     font-weight: bold;
-    width: 100px;
+    width: 120px;
     /* border: 2px solid orange; */
 
 }
 
 .grand-total input {
-    width: 100px;
-    height: 25px;
+    width: 120px;
+    height: 27px;
     border: 1px solid grey;
     border-radius: 4px;
 }
 
 .grand-total select {
-    width: 110px;
-    height: 27px;
+    width: 120px;
+    height: 30px;
     border: 1px solid grey;
     border-radius: 4px;
 
@@ -619,28 +644,12 @@ body {
 
 }
 
-/* #grand_total {
-    border: none;
-    border-bottom: 2px solid grey;
-} */
 
-/* .grand_total {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.grand-total {
-    gap: 8px;
-    justify-content: flex-start;
-} */
-
-
-/* total right div */
 
 
 .fixed-container {
 
-    width: 30%;
+    width: 25%;
     height: 91vh;
     position: fixed;
     right: 0;

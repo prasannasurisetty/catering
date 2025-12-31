@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="css/catering.css">
+    <link rel="stylesheet" type="text/css" href="css/rough.css">
     <script src="scriptfiles/catering.js" defer></script>
     <!-- Font Awesome (keep only one, latest) -->
     <link rel="stylesheet"
@@ -51,34 +51,42 @@
 
             <div class="catering-ordering">
                 <div class="customer_delivery_addresses" id="addresses_container"></div>
+                <div class="plate-info">
+                    <div class="plate-row">
+                        <span id="heading-info">Order Info</span>
+
+                    </div>
+                    <div class="plate-row">
+                        <label>Order Date:</label>
+                        <input type="date" id="order-date">
+                    </div>
+                    <div class="plate-row">
+                        <label>Order Time:</label>
+                        <input type="time" id="order-time">
+                    </div>
+
+                    <div class="plate-row">
+                        <label>No of Plates:</label>
+                        <input type="number" id="plate_count" oninput="updateSummary(); updateGrandTotal();">
+                    </div>
+                    <div class="plate-row">
+                        <label>Plate Cost:</label>
+                        <input type="number" id="plate_price" oninput="updateSummary(); updateGrandTotal();">
+                    </div>
+
+
+                    <div class="plate-row">
+                        <label>Total Amount:</label>
+                        <input type="number" id="total_amount" readonly>
+                    </div>
+                </div>
                 <div class="order-menu">
+
                     <div class="plate-order section" id="plate_order_section" style="display:none;">
-
-
-
-                        <div class="plate-box">
-                            <div class="plate-row">
-                                <!-- <span id="heading-info">Order Info</span> -->
-                                 <h3>Order Info</h3>
-                            </div>
-                            <div class="plate-row">
-                                <label>Order Date:</label>
-                                <input type="date" id="order-date">
-                            </div>
-                            <div class="plate-row">
-                                <label>Order Time:</label>
-                                <input type="time" id="order-time">
-                            </div>
-
-                        </div>
-                        <span id="heading-info">Menu</span>
-
+                        <span id="heading">Menu</span>
                         <div class="plate-menu">
-
                             <textarea id="item-names" placeholder="Enter Item Names Here...."></textarea>
                             <p id="duplicate-warning"></p>
-
-
                         </div>
 
 
@@ -89,25 +97,7 @@
 
 
                     <div class="plate_preview section" id="plate_preview" style="display:none;">
-                        <div>
-                            <div class="plate-box">
-                                <div class="plate-row">
-                                    <label>No of Plates:</label>
-                                    <input type="number" id="plate_count" oninput="updateSummary(); updateGrandTotal();">
-                                </div>
-                                <div class="plate-row">
-                                    <label>Plate Cost:</label>
-                                    <input type="number" id="plate_price" oninput="updateSummary(); updateGrandTotal();">
-                                </div>
-                            </div>
-                            <div class="plate-box">
-                                <div class="plate-row">
-                                    <label>Total Amount:</label>
-                                    <input type="number" id="total_amount" readonly>
-                                </div>
 
-                            </div>
-                        </div>
 
                         <div class="services-order" id="services_order_section">
                             <div class="add-services-text" onclick="addServiceRow()">
@@ -127,29 +117,32 @@
                         <div class="last-container">
                             <div class="grand">
                                 <div class="grand-total">
+                                
+                                </div>
+                                <div class="grand-total">
                                     <label class="grand_total">Grand Total: </label>
                                     <input type="number" id="grand_total" readonly>
                                 </div>
-                                <div class="grand-total">
-                                    <label class="adv-amt">Advance: </label>
-                                    <input type="number" id="adv-amt">
-                                </div>
+
                             </div>
 
                             <div class="plate-button">
                                 <div class="grand-total">
                                     <label>Paymode:</label>
                                     <select id="pay_mode">
-
-
                                     </select>
                                 </div>
-                                <div class="buttons-total">
-                                    <button id="save-menu">Save Menu</button>
-                                    <button id="set" onclick="setpaymentvariables();">Set</button>
-                                    <button id="cancel-menu">Cancel Menu</button>
+                                <div class="grand-total">
+                                    <label class="adv-amt">Advance: </label>
+                                    <input type="number" id="adv-amt">
                                 </div>
                             </div>
+                            <div class="buttons-total">
+                                <button id="save-menu">Save Menu</button>
+                                <button id="set" onclick="setpaymentvariables();">Set</button>
+                                <button id="cancel-menu">Cancel Menu</button>
+                            </div>
+
                         </div>
 
 

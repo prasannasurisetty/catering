@@ -71,6 +71,9 @@ function highlightAddress(aid) {
 
     const serviceSection = document.getElementById("plate_preview");
     if (serviceSection) serviceSection.style.display = "flex";
+    
+      const plateinfo = document.getElementById("plate-info");
+    if (plateinfo) plateinfo.style.display = "flex";
 
 }
 
