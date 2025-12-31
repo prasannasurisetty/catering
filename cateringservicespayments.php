@@ -37,46 +37,6 @@
         </div>
         <div class="order-details">
             <div class="payment-container">
-                <div class="order-payments contain">
-                    <div class="payment subcontain">
-                        <div class="form-group">
-                            <div class="form-row">
-                                <label><b>Total Amount:</b></label>
-                                <input type="number" id="total_amount" placeholder="Total Amount" readonly>
-                            </div>
-                            <div class="form-row">
-                                <label>Paid Amount:</label>
-                                <input type="number" id="paid_amount" placeholder="0">
-                            </div>
-                            <div class="form-row">
-                                <label>Balance Amount:</label>
-                                <input type="number" id="balance_amount" placeholder="0" readonly>
-                            </div>
-                            <div class="form-row">
-                                <label>Paymode:</label>
-                                <select id="pay_mode">
-                                    <option value="">Select Type</option>
-                                    <option value="1">Cash</option>
-                                    <option value="2">Card</option>
-                                    <option value="3">UPI</option>
-
-                                </select>
-                            </div>
-                            <div class="form-row">
-                                <label>Pay Date:</label>
-                                <input type="date" id="pay_date">
-                            </div>
-                            <div class="form-row">
-                                <button type="button" onclick="savepayment()">Pay</button>
-
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="payment-history subcontain">
-
-                    </div>
-                </div>
                 <div class="order-utensils contain">
                     <div class="utensils-order">
 
@@ -96,10 +56,78 @@
                         </div>
 
                     </div>
+                    <div class="delivered-info">
+                        <div class="grand">
+                            <div class="grand-total">
+                                <label class="delivered_time">Out For Delivery: </label>
+                                <input type="time" id="delivered_time">
+                            </div>
+                            <div class="button-total">
+                                <button id="delivered" onclick="delieveredstatus(true)">Delivered</button>
+
+                            </div>
+                        </div>
+
+                    </div>
 
 
 
                 </div>
+                <div class="order-payments contain">
+                    <div class="payment subcontain">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <label><b>Grand Total:</b></label>
+                                <input type="number" id="grand_total" placeholder="Total Amount" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Advance Amount:</label>
+                                <input type="number" id="advance_amount" placeholder="0" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Amount to be Paid:</label>
+                                <input type="number" id="amounttobe_paid" placeholder="0" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Recovery Amount:</label>
+                                <input type="number" id="recovery_amount" value='0' min='0'>
+                            </div>
+                            <div class="form-row">
+                                <label>Total Amount to be Paid:</label>
+                                <input type="number" id="totalamount_paid" placeholder="0" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Paid Amount:</label>
+                                <input type="number" id="paid_amount" value='0' min='0'>
+                            </div>
+                            <div class="form-row">
+                                <label>Balance Amount:</label>
+                                <input type="number" id="balance_amount" placeholder="0" readonly>
+                            </div>
+                            <div class="form-row">
+                                <label>Paymode:</label>
+                                <select id="pay_mode">
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <label>Pay Date:</label>
+                                <input type="date" id="pay_date">
+                            </div>
+                            <div class="form-row">
+                                <button type="button" onclick="savepayment()">Pay</button>
+
+                            </div>
+                            <div class="form-row" id="payment_amount_row">
+                                <label><b>Payment Amount:</b></label>
+                                <input type="number" id="payment_amount" readonly>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
             <div class="fixed-container">
                 <!-- <center> <h3>All Orders</h3> </center> -->

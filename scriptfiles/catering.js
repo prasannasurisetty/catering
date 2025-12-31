@@ -595,11 +595,17 @@ function saveCateringOrder() {
     const plate_cost = Number(document.getElementById("plate_price").value) || 0;
     const total_amount = Number(document.getElementById("total_amount").value) || 0;
     const grand_total = Number(document.getElementById("grand_total").value) || 0;
+    const advance_amount = Number(document.getElementById("adv-amt").value) || 0;
+    const pay_mode = document.getElementById("pay_mode").value || "";
+
 
     if (plate_count <= 0 || plate_cost <= 0) {
         alert("Enter valid plate count and plate cost");
         return;
     }
+
+
+
 
     /* ================= FOOD ITEMS (supports vada-2 format) ================= */
 
@@ -637,6 +643,11 @@ function saveCateringOrder() {
         }
     });
 
+    if (advance_amount > 0 && !pay_mode) {
+        alert("Select payment mode for advance");
+        return;
+    }
+
     /* ================= PAYLOAD ================= */
 
     const payload = {
@@ -650,8 +661,11 @@ function saveCateringOrder() {
         total_amount: total_amount,
         grand_total: grand_total,
         fooditems: fooditems,
-        services: services
+        services: services,
+        advance_amount: advance_amount,   // ✅ NEW
+        pay_mode: pay_mode,
     };
+
 
     console.log("SAVE ORDER PAYLOAD:", payload);
 
@@ -1135,6 +1149,64 @@ document.getElementById("item-names").addEventListener("input", function () {
         warningEl.textContent = "";
     }
 });
+
+
+
+
+function loadpaymode() {
+    // console.log("1.loadpaymode...");
+
+    var payload = {
+        load: "loadpaymode",
+        sno: "",
+        type: "type"
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/cateringservicespayments.php",
+        data: JSON.stringify(payload),
+        dataType: "json",
+        contentType: "application/json",
+        beforeSend: function () {
+            // console.log("Fetching food types...");
+        },
+        success: function (response) {
+            // console.log("3.load paymode Response received:", response);
+
+            let dropdown = document.getElementById("pay_mode");
+            dropdown.innerHTML = ""; // Clear existing options
+
+            let defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = "Select paymode";
+            // defaultOption.disabled = true;
+            defaultOption.selected = true;
+            dropdown.appendChild(defaultOption);
+
+            if (response.status === "success" && response.data.length > 0) {
+                response.data.forEach(x => {
+                    let option = document.createElement('option');
+                    option.value = x.sno;
+                    option.text = x.type;
+                    dropdown.appendChild(option);
+                });
+            } else {
+                console.warn("No paymode found.");
+                let noDataOption = document.createElement('option');
+                noDataOption.value = "";
+                noDataOption.text = "No types available";
+                noDataOption.disabled = true;
+                dropdown.appendChild(noDataOption);
+            }
+        },
+        error: function (err) {
+            console.error("Error loading paymode:", err);
+            alert("Failed to load  paymode. Please try again later.");
+        }
+    });
+}
+loadpaymode();
 
 
 

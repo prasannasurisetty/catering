@@ -54,20 +54,24 @@
                 <div class="order-menu">
                     <div class="plate-order section" id="plate_order_section" style="display:none;">
 
-                        <span id="heading-info">Order Info</span>
+
 
                         <div class="plate-box">
                             <div class="plate-row">
-                                <label>Date:</label>
+                                <!-- <span id="heading-info">Order Info</span> -->
+                                 <h3>Order Info</h3>
+                            </div>
+                            <div class="plate-row">
+                                <label>Order Date:</label>
                                 <input type="date" id="order-date">
                             </div>
                             <div class="plate-row">
-                                <label>Time:</label>
+                                <label>Order Time:</label>
                                 <input type="time" id="order-time">
                             </div>
 
                         </div>
-                        <span id="heading-info">Items Info</span>
+                        <span id="heading-info">Menu</span>
 
                         <div class="plate-menu">
 
@@ -86,10 +90,6 @@
 
                     <div class="plate_preview section" id="plate_preview" style="display:none;">
                         <div>
-                            <span id="heading-info">Plate Info</span>
-
-
-
                             <div class="plate-box">
                                 <div class="plate-row">
                                     <label>No of Plates:</label>
@@ -119,22 +119,36 @@
                             </div>
 
 
-                            <div id="services_container">
-                                <!-- Service rows will appear here -->
-                            </div>
+
 
 
                         </div>
 
                         <div class="last-container">
-                            <div class="grand-total">
-                                <label class="grand_total">Grand Total: </label>
-                                <input type="number" id="grand_total" readonly>
+                            <div class="grand">
+                                <div class="grand-total">
+                                    <label class="grand_total">Grand Total: </label>
+                                    <input type="number" id="grand_total" readonly>
+                                </div>
+                                <div class="grand-total">
+                                    <label class="adv-amt">Advance: </label>
+                                    <input type="number" id="adv-amt">
+                                </div>
                             </div>
+
                             <div class="plate-button">
-                                <button id="save-menu">Save Menu</button>
-                                <button id="set" onclick="setpaymentvariables();">Set</button>
-                                <button id="cancel-menu">Cancel Menu</button>
+                                <div class="grand-total">
+                                    <label>Paymode:</label>
+                                    <select id="pay_mode">
+
+
+                                    </select>
+                                </div>
+                                <div class="buttons-total">
+                                    <button id="save-menu">Save Menu</button>
+                                    <button id="set" onclick="setpaymentvariables();">Set</button>
+                                    <button id="cancel-menu">Cancel Menu</button>
+                                </div>
                             </div>
                         </div>
 

@@ -14,6 +14,8 @@ $addressid = $data['addressid'] ?? "";
 $paidamount = $data['paidamount'] ?? "";
 $paymode = $data['paymode'] ?? "";
 $paydate = $data['paydate'] ?? "";
+$recoveryamt = $data['recoveryamt'] ?? "";
+$deliveredtime = $data['deliveredtime'] ?? "";
 
 if ($load == "savepayment") {
     savepayment($conn);
@@ -25,7 +27,93 @@ if ($load == "savepayment") {
     addtensils($conn);
 } else if ($load == "fetchutensils") {
     fetchutensils($conn);
+} else if ($load == "loadpaymode") {
+    loadpaymode($conn);
+} else if ($load == "deliveredstatus") {
+    deliveredstatus($conn);
 }
+
+
+
+function deliveredstatus($conn)
+{
+    header('Content-Type: application/json');
+
+    // READ JSON INPUT
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    if (!$data) {
+        echo json_encode([
+            "status" => "failed",
+            "message" => "Invalid JSON input"
+        ]);
+        return;
+    }
+
+    $customerid    = $data['customerid'] ?? '';
+    $addressid     = $data['addressid'] ?? '';
+    $orderdate     = $data['orderdate'] ?? '';
+    $ordertime     = $data['ordertime'] ?? '';
+    $deliveredtime = $data['deliveredtime'] ?? '';
+    $delivered     = (int)($data['delivered'] ?? 0);
+
+    if (
+        !$customerid || !$addressid ||
+        !$orderdate || !$ordertime || !$deliveredtime
+    ) {
+        echo json_encode([
+            "status" => "failed",
+            "message" => "Missing required data"
+        ]);
+        return;
+    }
+
+
+
+    // OUT FOR DELIVERY ONLY
+    $sql = "
+            UPDATE catering_orders
+            SET
+                outfor_delivery = '$deliveredtime',
+                delivered_status = '$delivered'
+            WHERE customer_id = '$customerid'
+              AND address_id  = '$addressid'
+              AND order_date  = '$orderdate'
+              AND order_time  = '$ordertime'
+              AND order_status = 1
+              AND delivered_status = 0
+            LIMIT 1
+        ";
+
+    if (mysqli_query($conn, $sql)) {
+        echo json_encode([
+            "code" =>  "200",
+            "status" => "success",
+            "message" => "updated successfull"
+        ]);
+    } else {
+        echo json_encode([
+            "code" =>  "400",
+            "status" => "failed",
+            "message" => "updated failed"
+        ]);
+    }
+}
+
+
+function loadpaymode($conn)
+{
+    $selectsql = "SELECT * FROM `paymode`";
+    $resultsql = getData($conn, $selectsql);
+    if (count($resultsql) > 0) {
+        $jsonresponse = array('code' => '200', 'status' => 'success', 'data' => $resultsql);
+        echo json_encode($jsonresponse);
+    } else {
+        $jsonresponse = array('code' => '200', 'status' => 'No Records Found');
+        echo json_encode($jsonresponse);
+    }
+}
+
 
 
 function fetchutensils($conn)
@@ -62,8 +150,8 @@ function fetchutensils($conn)
             AND address_id = $addressid
             AND order_date = '$orderdate'
             AND order_time = '$ordertime'
-        LIMIT 1
-    ";
+                 LIMIT 1
+                     ";
 
     $utensilsRes = mysqli_query($conn, $utensilsSql);
 
@@ -188,10 +276,6 @@ function addtensils($conn)
         }
     }
 
-    // ================================
-    // 🔹 SAVE / UPDATE UTENSILS ID IN ORDERS TABLE
-    // ================================
-
 
 
     if ($orderdate && $ordertime) {
@@ -251,13 +335,20 @@ function addtensils($conn)
 function fetchtotalamount($conn)
 {
     global $customerid, $addressid, $orderdate, $ordertime;
+
     $sql = "
-        SELECT (grand_total - paid_amount) AS totalamount
+        SELECT 
+            grand_total,
+            paid_amount,
+            recovery_amount,
+            payment_status,
+            (grand_total + IFNULL(recovery_amount,0) - paid_amount) AS amounttobe_paid
         FROM catering_orders
         WHERE customer_id = '$customerid'
           AND address_id  = '$addressid'
           AND order_date  = '$orderdate'
           AND order_time  = '$ordertime'
+        LIMIT 1
     ";
 
     $result = getData($conn, $sql);
@@ -265,22 +356,29 @@ function fetchtotalamount($conn)
     if ($result && count($result) > 0) {
         echo json_encode([
             "status" => "success",
-            "totalamount" => $result[0]['totalamount']
+            "grand_total"     => $result[0]['grand_total'],
+            "paid_amount"     => $result[0]['paid_amount'],
+            "recovery_amount" => $result[0]['recovery_amount'],
+            "amounttobe_paid" => max(0, $result[0]['amounttobe_paid']),
+            "payment_status"  => $result[0]['payment_status']
         ]);
     } else {
         echo json_encode([
             "status" => "failed",
-            "message" => "failed to fetch"
+            "message" => "Order not found"
         ]);
     }
 }
 
+
+
 function paymenthistory($conn)
 {
-    global $orderdate, $customerid, $addressid;
+    global $orderdate, $customerid, $addressid, $ordertime;
     $sql = "SELECT c.paid_date,c.paid_amount,p.type AS pay_mode FROM `catering_payments` c 
             JOIN paymode p ON p.sno = c.pay_mode
-           WHERE c.customer_id = '$customerid' AND c.address_id = '$addressid' ";
+            JOIN catering_orders co ON co.billing_id = c.billing_id
+           WHERE c.customer_id = '$customerid' AND c.address_id = '$addressid' AND co.order_date = '$orderdate' AND co.order_time='$ordertime'";
     $result = getData($conn, $sql);
     if (count($result) > 0) {
         $jsonresponse = array('code' => '200', 'status' => 'success', "data" => $result);
@@ -293,8 +391,9 @@ function paymenthistory($conn)
 
 function savepayment($conn)
 {
-
     header('Content-Type: application/json');
+
+    
 
     $data = json_decode(file_get_contents("php://input"), true);
 
@@ -306,42 +405,49 @@ function savepayment($conn)
         return;
     }
 
-    // ✅ Read inputs (your style)
-    $customerid = $data['customerid'] ?? '';
-    $addressid  = $data['addressid'] ?? '';
-    $orderdate  = $data['orderdate'] ?? '';
-    $ordertime  = $data['ordertime'] ?? '';
-    $paidamount = floatval($data['paidamount'] ?? 0);
-    $paymode    = $data['paymode'] ?? '';
-    $paydate    = $data['paydate'] ?? '';
-    $adminid    = $_SESSION['adminid'] ?? 0;
+    /* ===============================
+       1️⃣ READ INPUTS
+    =============================== */
+
+    $customerid   = $data['customerid'] ?? '';
+    $addressid    = $data['addressid'] ?? '';
+    $orderdate    = $data['orderdate'] ?? '';
+    $ordertime    = $data['ordertime'] ?? '';
+    $paidamount   = floatval($data['paidamount'] ?? 0);
+    $recoveryamt  = floatval($data['recoveryamt'] ?? 0);
+    $paymode      = $data['paymode'] ?? '';
+    $paydate      = $data['paydate'] ?? '';
+    $adminid      = $_SESSION['adminid'] ?? 0;
 
     if (
-        !$customerid || !$addressid || !$orderdate ||
-        !$ordertime || !$paidamount || !$paymode || !$paydate
+        !$customerid || !$addressid || !$orderdate || !$ordertime ||
+        !$paymode || !$paydate || $paidamount <= 0
     ) {
         echo json_encode([
             "status" => "failed",
-            "message" => "Missing payment data"
+            "message" => "Missing or invalid payment data"
         ]);
         return;
     }
 
-    // 🔒 START TRANSACTION
+    /* ===============================
+       2️⃣ START TRANSACTION
+    =============================== */
+
     mysqli_begin_transaction($conn);
 
     /* ===============================
-       1️⃣ INSERT PAYMENT
+       3️⃣ INSERT PAYMENT
     =============================== */
 
-    $insertSql = "
+    $insertPaymentSql = "
         INSERT INTO catering_payments
         (customer_id, address_id, paid_date, paid_amount, pay_mode, admin_id)
         VALUES
         ('$customerid', '$addressid', '$paydate', '$paidamount', '$paymode', '$adminid')
     ";
 
-    if (!mysqli_query($conn, $insertSql)) {
+    if (!mysqli_query($conn, $insertPaymentSql)) {
         mysqli_rollback($conn);
         echo json_encode([
             "status" => "failed",
@@ -351,7 +457,7 @@ function savepayment($conn)
     }
 
     /* ===============================
-       2️⃣ GET ORDER DETAILS
+       4️⃣ FETCH ORDER
     =============================== */
 
     $orderSql = "
@@ -378,14 +484,19 @@ function savepayment($conn)
     $order = mysqli_fetch_assoc($orderRes);
 
     /* ===============================
-       3️⃣ CALCULATE NEW PAID AMOUNT
+       5️⃣ CALCULATE PAYMENT STATUS
     =============================== */
 
-    $newPaidAmount = $order['paid_amount'] + $paidamount;
-    $paymentStatus = ($newPaidAmount >= $order['grand_total']) ? 1 : 0;
+    $previousPaid = floatval($order['paid_amount']);
+    $grandTotal   = floatval($order['grand_total']);
+
+    $newPaidAmount = $previousPaid + $paidamount;
+    $totalPayable  = $grandTotal + $recoveryamt;
+
+    $paymentStatus = ($newPaidAmount >= $totalPayable) ? 1 : 0;
 
     /* ===============================
-       4️⃣ GET MAX BILLING ID (KEY CHANGE)
+       6️⃣ GET BILLING ID
     =============================== */
 
     $billingSql = "
@@ -400,19 +511,20 @@ function savepayment($conn)
     $billingId  = $billingRow['billing_id'];
 
     /* ===============================
-       5️⃣ UPDATE ORDER
+       7️⃣ UPDATE ORDER
     =============================== */
 
-    $updateSql = "
+    $updateOrderSql = "
         UPDATE catering_orders
         SET
-            paid_amount    = '$newPaidAmount',
-            billing_id     = '$billingId',
-            payment_status = '$paymentStatus'
+            paid_amount     = '$newPaidAmount',
+            billing_id      = '$billingId',
+            payment_status  = '$paymentStatus',
+            recovery_amount = '$recoveryamt'
         WHERE order_id = '{$order['order_id']}'
     ";
 
-    if (!mysqli_query($conn, $updateSql)) {
+    if (!mysqli_query($conn, $updateOrderSql)) {
         mysqli_rollback($conn);
         echo json_encode([
             "status" => "failed",
@@ -422,7 +534,7 @@ function savepayment($conn)
     }
 
     /* ===============================
-       6️⃣ GENERATE RECEIPT (ONLY WHEN FULLY PAID)
+       8️⃣ GENERATE RECEIPT (ONLY IF FULLY PAID)
     =============================== */
 
     if ($paymentStatus == 1) {
@@ -456,15 +568,20 @@ function savepayment($conn)
         }
     }
 
-    // ✅ COMMIT
+    /* ===============================
+       9️⃣ COMMIT
+    =============================== */
+
     mysqli_commit($conn);
 
     echo json_encode([
         "status" => "success",
         "message" => "Payment saved successfully",
-        "paid_amount" => $newPaidAmount,
-        "grand_total" => $order['grand_total'],
-        "payment_status" => $paymentStatus,
-        "billing_id" => $billingId
+        "paid_amount"     => $newPaidAmount,
+        "grand_total"     => $grandTotal,
+        "recovery_amount" => $recoveryamt,
+        "total_payable"   => $totalPayable,
+        "payment_status"  => $paymentStatus,
+        "billing_id"      => $billingId
     ]);
 }

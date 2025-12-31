@@ -363,33 +363,27 @@ body {
 
 .plate-row {
     /* border: 1px solid green; */
-    width: 50%;
+    width: 40%;
     height: 38px;
     display: flex;
-    gap: 30px;
+    gap: 10px;
     justify-content: center;
     align-items: center;
     padding: 5px;
 }
 
-.plate-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 
 .plate-row label {
     font-size: 16px;
     font-weight: bold;
-    width: 100px;
-    display: flex;
-    align-items: center;
+    width: 95px;
+    /* display: flex;
+    align-items: center; */
     /* border: 2px solid orange; */
 }
 
 .plate-row input {
     width: 100px;
-    /* border: none; */
     height: 25px;
     border: 1px solid grey;
     border-radius: 4px;
@@ -461,7 +455,7 @@ body {
     gap: 10px;
     width: 90%;
     /* border: 2px solid grey; */
-    height: 253px;
+    height: 180px;
 
     margin-top: 13px;
 }
@@ -534,22 +528,57 @@ body {
 }
 
 .plate-button {
+    /* width: 100%; */
+    height: 7vh;
+    /* border: 2px solid green; */
+    display: flex;
+    flex-direction: row;
+    /* justify-content: flex-end; */
+    align-items: center;
+}
+
+
+.grand-total {
     width: 50%;
     height: 8vh;
     /* border: 2px solid green; */
     display: flex;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
+    align-items: center;
+}
+.buttons-total{
+      width: 50%;
+    height: 8vh;
+    display: flex;
+    flex-direction: row;
+    justify-content:space-around ;
     align-items: center;
 }
 
-.grand-total {
-    width: 49%;
-    height: 8vh;
-    /* border: 2px solid green; */
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+.grand-total label {
+    font-size: 16px;
+    font-weight: bold;
+    width: 100px;
+    /* border: 2px solid orange; */
+
 }
+
+.grand-total input {
+    width: 100px;
+    height: 25px;
+    border: 1px solid grey;
+    border-radius: 4px;
+}
+
+.grand-total select {
+    width: 110px;
+    height: 27px;
+    border: 1px solid grey;
+    border-radius: 4px;
+
+
+}
+
 
 #save-menu {
     width: 100px;
@@ -558,7 +587,7 @@ body {
     color: white;
     font-size: 16px;
     border-radius: 6px;
-    margin-right: 20px;
+    /* margin-right: 20px; */
     border: none;
 }
 
@@ -569,32 +598,41 @@ body {
     color: white;
     font-size: 16px;
     border-radius: 6px;
-    margin-right: 20px;
+    /* margin-right: 20px; */
     border: none;
 }
 
 .last-container {
-    width: 99%;
-    height: 8vh;
+    width: 97%;
+    height: 15vh;
     /* border: 2px solid royalblue; */
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
 
-#grand_total {
+.grand {
+    /* border:2px solid blue; */
+    display: flex;
+    flex-direction: row;
+    /* width:100%; */
+    height: 8vh;
+
+}
+
+/* #grand_total {
     border: none;
     border-bottom: 2px solid grey;
-}
+} */
 
-.grand_total {
-    font-size: 20px;
+/* .grand_total {
+    font-size: 16px;
     font-weight: bold;
 }
 
 .grand-total {
     gap: 8px;
     justify-content: flex-start;
-}
+} */
 
 
 /* total right div */

@@ -429,6 +429,12 @@ function savemenu($conn)
 
     $fooditems    = $data['fooditems'] ?? [];
     $services     = $data['services'] ?? [];
+    $advance_amount = (float)($data['advance_amount'] ?? 0);
+    $pay_mode       = $data['pay_mode'] ?? '';
+    $adminid        = $_SESSION['adminid'] ?? 0;
+    $billing_id = null;
+
+
 
 
     /* ================= plate_id from fooditems ================= */
@@ -488,22 +494,85 @@ function savemenu($conn)
         }
 
         /* ================= INSERT ORDER ================= */
+        $payment_status = ($advance_amount >= $grand_total) ? 1 : 0;
+
         setData(
             $conn,
             "INSERT INTO catering_orders
-             (customer_id, address_id, plate_id, services_id,
-              order_date, order_time,
-              order_count, plate_cost,
-              total_amount, services_amount, grand_total,
-              order_status, payment_status, delivered_status,
-              admin_id)
-             VALUES
-             ('$customerid','$addressid','$plate_id','$services_id',
-              '$orderdate','$ordertime',
-              '$plates_count','$plate_cost',
-              '$total_amount','$services_amount','$grand_total',
-              '1','0','0','2')"
+     (customer_id, address_id, plate_id, services_id,
+      order_date, order_time,
+      order_count, plate_cost,
+      total_amount, services_amount, grand_total,
+      paid_amount, payment_status,
+      order_status, delivered_status,
+      admin_id)
+     VALUES
+     ('$customerid','$addressid','$plate_id','$services_id',
+      '$orderdate','$ordertime',
+      '$plates_count','$plate_cost',
+      '$total_amount','$services_amount','$grand_total',
+      '$advance_amount','$payment_status',
+      '1','0','$adminid')"
         );
+        $order_id = mysqli_insert_id($conn);
+
+
+        if ($advance_amount > 0) {
+
+
+
+            setData(
+                $conn,
+                "INSERT INTO catering_payments
+         (customer_id, address_id, paid_date,
+          paid_amount, pay_mode, admin_id)
+         VALUES
+         ('$customerid','$addressid',CURDATE(),
+          '$advance_amount','$pay_mode','$adminid')"
+            );
+            $billing_id = mysqli_insert_id($conn);
+        }
+        if ($billing_id) {
+            setData(
+                $conn,
+                "UPDATE catering_orders
+         SET billing_id = '$billing_id'
+         WHERE order_id = '$order_id'"
+            );
+        }
+        if ($payment_status == 1) {
+
+            $checkReceiptSql = "
+            SELECT receipt_id
+            FROM catering_receipts
+            WHERE billing_id = '$billing_id'
+            LIMIT 1
+        ";
+
+            $checkRes = mysqli_query($conn, $checkReceiptSql);
+
+            if ($checkRes && mysqli_num_rows($checkRes) == 0) {
+
+                $insertReceiptSql = "
+                INSERT INTO catering_receipts
+                (billing_id, customer_id, address_id, receipt_date)
+                VALUES
+                ('$billing_id', '$customerid', '$addressid', CURDATE())
+            ";
+
+                if (!mysqli_query($conn, $insertReceiptSql)) {
+                    mysqli_rollback($conn);
+                    echo json_encode([
+                        "status" => "failed",
+                        "message" => "Receipt generation failed"
+                    ]);
+                    return;
+                }
+            }
+        }
+
+
+
 
         mysqli_commit($conn);
 
