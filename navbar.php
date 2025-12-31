@@ -297,7 +297,7 @@
 
 
     <div class="menu">
-      <div class="menu-item">
+      <!-- <div class="menu-item">
         Settings ▾
         <ul class="submenu">
           <li><a href="addfoodtype.php">Add Category</a></li>
@@ -313,16 +313,10 @@
 
 
         </ul>
-      </div>
+      </div> -->
 
-      <div class="menu-item">
+      <div class="menu-item" id="set" onclick="setpaymentvariables()">
         Billing 
-        <!-- <ul class="submenu">
-          <li><a href="kot.php">KOT</a></li>
-            <li><a href="orderreview.php">Return Orders</a></li>
-          <li><a href="billing.php">Billing</a></li>
-          <li><a href="summary.php">Reports</a></li>
-        </ul> -->
       </div>
     </div>
 

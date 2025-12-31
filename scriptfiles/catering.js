@@ -71,8 +71,8 @@ function highlightAddress(aid) {
 
     const serviceSection = document.getElementById("plate_preview");
     if (serviceSection) serviceSection.style.display = "flex";
-    
-      const plateinfo = document.getElementById("plate-info");
+
+    const plateinfo = document.getElementById("plate-info");
     if (plateinfo) plateinfo.style.display = "flex";
 
 }
@@ -722,19 +722,6 @@ function updateOrder() {
     /* ===== FOOD ITEMS (RAW STRINGS ONLY) ===== */
     const fooditems = getItemsFromTextarea(); // already returns string[]
 
-    // getItemsFromTextarea().forEach(line => {
-
-    //     let name = line;
-    //     let qty = 1;
-
-    //     if (line.includes("-")) {
-    //         const parts = line.split("-");
-    //         name = parts[0].trim();
-    //         qty = parseInt(parts[1], 10) || 1;
-    //     }
-
-    //     fooditems.push({ name, qty });
-    // });
 
     /* ===== SERVICES ===== */
     const services = [];
@@ -888,7 +875,7 @@ function fetchAllOrders() {
 
     var payload = {
         load: "allorders"
-    }
+    };
 
     $.ajax({
         type: "POST",
@@ -896,12 +883,17 @@ function fetchAllOrders() {
         data: JSON.stringify(payload),
         contentType: "application/json",
         dataType: "json",
+
         success: function (response) {
 
             const container = document.getElementById("ordersList");
             container.innerHTML = "";
 
-            if (response.code !== 200 || !response.data) {
+            if (
+                response.code !== 200 ||
+                !Array.isArray(response.data) ||
+                response.data.length === 0
+            ) {
                 container.innerHTML = "<p>No orders found</p>";
                 return;
             }
@@ -909,21 +901,26 @@ function fetchAllOrders() {
             response.data.forEach(order => {
                 const div = document.createElement("div");
                 div.className = "order-card";
+
                 div.innerHTML = `
-                    <h4>Order - ${order.order_id}</h4>
-                    <p><b>Customer:</b> ${order.customer_id}</p>
-                    <p><b>Address:</b> ${order.address_id}</p>
                     <p><b>Date:</b> ${order.order_date}</p>
-                    <p><b>Total:</b> ₹${order.grand_total}</p>
+                    <p><b>Time:</b> ${order.order_time}</p>
+                    <p><b>Customer ID:</b> ${order.customer_id}</p>
+                    <p><b>Customer Name:</b> ${order.CustomerName}</p>
+                    <p><b>Phone No:</b> ${order.address_ph_number}</p>
+                    <p><b>Address:</b> ${order.full_address}</p>
                 `;
+
                 container.appendChild(div);
             });
         },
+
         error: function () {
             alert("Error loading orders");
         }
     });
 }
+
 
 // Load on page open
 fetchAllOrders();
@@ -1117,6 +1114,7 @@ function setpaymentvariables() {
     localStorage.setItem("orderdate", orderdate);
     localStorage.setItem("ordertime", ordertime);
     localStorage.setItem("grandtotal", grandtotal);
+    window.location.href = "cateringservicespayments.php";
 
 }
 

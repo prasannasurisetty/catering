@@ -21,9 +21,7 @@
     font-family: "Calibri Light", Calibri, sans-serif;
 }
 
-/* .fixed-container h3 {
-    color: var(--color-blue);
-} */
+
 
 body {
     margin: 0;
@@ -570,14 +568,15 @@ body {
 }
 
 .buttons-total {
-    align-self: end;
+       align-self: end;
     width: 50%;
     height: 8vh;
-    gap:20px;
+    gap: 20px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+    margin-top: 10px;
 }
 
 .grand-total label {
@@ -682,7 +681,7 @@ body {
 
 #ordersList {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /* grid-template-columns: repeat(2, 1fr); */
     /* 2 cards per row */
     gap: 10px;
     /* border : 2px solid #e0e0e0; */

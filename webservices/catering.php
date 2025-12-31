@@ -349,7 +349,24 @@ function fetchmenu($conn)
 
 function allorders($conn)
 {
-    $sql = "SELECT * FROM catering_orders WHERE order_status = 1";
+    $sql = "SELECT 
+    co.order_date,
+    co.order_time,
+    co.customer_id,
+    c.CustomerName,
+    a.address_ph_number,
+    a.aid,
+    CONCAT(
+        a.flatno, ', ',
+        a.area, ', ',
+        a.street, ', ',
+        a.landmark, ', ',
+        a.pincode
+    ) AS full_address
+    FROM catering_orders co
+    JOIN customers c ON c.CustomerID = co.customer_id
+    JOIN address a ON a.aid = co.address_id
+     WHERE co.order_status = 1 AND co.delivered_status =0 ";
     $result = getData($conn, $sql);
 
     if (!empty($result)) {
@@ -391,6 +408,8 @@ function cancelmenu($conn)
           AND address_id  = '$addressid'
           AND order_date  = '$orderdate'
           AND order_time = '$ordertime'
+          AND order_status = 1
+          AND delivered_status = 0
     ";
 
     $result = setData($conn, $sql);

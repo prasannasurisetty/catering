@@ -395,7 +395,7 @@ function fetchAllOrders() {
 
     var payload = {
         load: "allorders"
-    }
+    };
 
     $.ajax({
         type: "POST",
@@ -403,12 +403,17 @@ function fetchAllOrders() {
         data: JSON.stringify(payload),
         contentType: "application/json",
         dataType: "json",
+
         success: function (response) {
 
             const container = document.getElementById("ordersList");
             container.innerHTML = "";
 
-            if (response.code !== 200 || !response.data) {
+            if (
+                response.code !== 200 ||
+                !Array.isArray(response.data) ||
+                response.data.length === 0
+            ) {
                 container.innerHTML = "<p>No orders found</p>";
                 return;
             }
@@ -416,22 +421,25 @@ function fetchAllOrders() {
             response.data.forEach(order => {
                 const div = document.createElement("div");
                 div.className = "order-card";
+
                 div.innerHTML = `
-                    <h4>Order - ${order.order_id}</h4>
-                    <p><b>Customer:</b> ${order.customer_id}</p>
-                    <p><b>Address:</b> ${order.address_id}</p>
                     <p><b>Date:</b> ${order.order_date}</p>
-                    <p><b>Total:</b> ₹${order.grand_total}</p>
+                    <p><b>Time:</b> ${order.order_time}</p>
+                    <p><b>Customer ID:</b> ${order.customer_id}</p>
+                    <p><b>Customer Name:</b> ${order.CustomerName}</p>
+                    <p><b>Phone No:</b> ${order.address_ph_number}</p>
+                    <p><b>Address:</b> ${order.full_address}</p>
                 `;
+
                 container.appendChild(div);
             });
         },
+
         error: function () {
             alert("Error loading orders");
         }
     });
 }
-
 
 
 fetchAllOrders();

@@ -1,0 +1,358 @@
+:root {
+    /* --primary: #ff5200;
+    --secondary: #ff9151; */
+    /* --border: #d0d0d0; */
+    --text: #111;
+}
+:root {
+    --color-primary: #8D3A08;
+    --color-light: #D4B05A;
+    --color-dark: #3A2615;
+    --color-medium: #C28B42;
+    --color-border: #8D3A08;
+    --color-tab: #FBF5E5;
+    --color-label: #3A2615;
+    --color-button: #8D3A08;
+    --color-blue: #007497;
+    --soft-card: #F4E6C3;
+    --muted-text: rgba(58, 38, 21, 0.55);
+    --glass-bg: rgba(80, 48, 18, 0.05);
+    --radius: 12px;
+    --shadow: 0 8px 26px rgba(50, 30, 10, 0.07);
+    --ease: cubic-bezier(0.2, 0.9, 0.3, 1);
+    --card-gap: 10px;
+     --bg: #f7f8fa;
+}
+
+* {
+     box-sizing: border-box;
+    font-family: "Calibri Light", Calibri, sans-serif;
+}
+
+body {
+    background: var(--bg);
+    margin: 0;
+    color: var(--text);
+}
+
+.container {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+h2 {
+    color: var(--color-primary);
+    text-align: center;
+    margin: 6px 0 18px 0;
+}
+
+
+.layout {
+    display: flex;
+    gap: 20px;
+    height: 76vh;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.left,
+.right {
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 14px;
+    background: #fff;
+}
+
+.left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* gap: 10px; */
+}
+
+.right {
+    width: 50%;
+    overflow-y: auto;
+}
+
+#addressList {
+    max-height: calc(100% - 60px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.form-group label {
+    width: 32%;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    width: 62%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.btn {
+    background: var(--color-dark);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.btn.secondary {
+    background: #666;
+}
+
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.instruction-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding: 6px;
+}
+
+.special-section {
+    height: 500px;
+    overflow-y: auto;
+}
+
+.special-section::-webkit-scrollbar {
+    width: 6px;
+}
+
+.special-section::-webkit-scrollbar-thumb {
+    background: #b5b5b5;
+    border-radius: 4px;
+}
+
+.special-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.instruction-chip {
+    /* background: #f0f0f0; */
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ADDRESS CARDS */
+.address-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fafafa;
+    position: relative;
+    width: 46vw;
+}
+
+.remove-address {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    cursor: pointer;
+    color: red;
+}
+
+/* Bottom Buttons */
+.bottom-buttons {
+    height: 10vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    /* border: 1px solid black; */
+    padding: 10px;
+    border-radius: 6px;
+}
+
+
+.recmd {
+    /* border: 2px solid black; */
+    font-family: "Poppins";
+    font-size: 12px;
+    height: auto;
+    width: 33vw;
+    position: absolute;
+    top: 19.5vh;
+    left: 2vw;
+    display: none;
+    max-height: max-content;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    font-weight: bold;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-top: 0px;
+    overflow-y: auto;
+    padding: 5px;
+    z-index: 0;
+}
+
+.recmd .multiple_list_item:hover {
+    color: white;
+    background-color: black;
+}
+
+.multiple_list_item {
+    margin: 0px;
+    cursor: pointer;
+    padding: 4px 8px;
+    width: 100%;
+    border: #ccc 1px solid;
+    box-sizing: border-box;
+    height: 5vh;
+    display: flex;
+    align-items: center;
+}
+
+.address-block {
+    margin-bottom: 20px;
+}
+
+.address-separator {
+    border: none;
+    border-top: 3px solid #ccc;
+    margin: 15px 0;
+}
+
+#search_input {
+    height: 8vh;
+    padding: 10px;
+    border: 2px solid grey;
+    border-radius: 7px;
+    width: 500px;
+}
+
+#icon-search {
+    position: absolute;
+    left: 31.8%;
+    top: 13%;
+    scale: 1.4;
+    padding: 6px;
+    border-left: 2px solid grey;
+    color: cadetblue;
+}
+
+#registerBtn,
+#cancelBtn {
+    width: 200px;
+    height: 6vh;
+    border: 2px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+.error-border {
+    border: 2px solid red !important;
+    background-color: #ffeaea;
+}
+
+#phone1Error {
+    width: 100%;
+    margin-left: 35%;
+    font-size: 13px;
+    color: red;
+    margin-top: 4px;
+}
+
+.customer-info {
+    /* border: 2px solid grey; */
+    width: 100%;
+    height: 28vh;
+    border-radius: 8px;
+    padding: 10px;
+
+
+}
+
+
+h3 {
+    margin: 15px 0 15px 0;
+}
+
+#monthly-checkbox {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.header-box {
+    position: relative;
+    text-align: center;
+    /* centers the heading */
+    padding: 10px;
+}
+
+.header-box h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.header-box .home-icon {
+    position: absolute;
+    right: 10px;
+    /* keep icon at right end */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+}
+
+.customer-info h3,
+.special-section h3,
+.right-sub h3
+{
+    color: var(--color-blue);
+}
+.right-sub{
+    display:flex;
+     justify-content:space-between;
+     align-items:center;
+}
+
+#home-icon{
+   color:var(--color-dark);
+   font-size:28px;
+}
