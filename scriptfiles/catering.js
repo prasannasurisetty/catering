@@ -533,31 +533,63 @@ function updateGrandTotal() {
     // ✅ AUTO UPDATE INPUT
     document.getElementById("grand_total").value = grandTotal;
 }
-
 function addServiceRow() {
     const container = document.getElementById("services_container");
 
     const row = document.createElement("div");
     row.className = "service-row";
+    row.dataset.sno = ""; // empty = new service
 
     row.innerHTML = `
-        <input type="text" placeholder="Enter Service Type">
-        <input type="number" placeholder="Amount ₹" class="service-cost" oninput="updateGrandTotal()">
-        <button class="remove-service" onclick="removeServiceRow(this)">
+        <input type="text"
+               placeholder="Enter Service Type"
+               onblur="checkDuplicateService(this)">
+        <input type="number"
+               placeholder="Amount ₹"
+               class="service-cost"
+               oninput="updateGrandTotal()">
+        <button type="button"
+                class="remove-service"
+                onclick="removeServiceRow(this)">
             <i class="fa fa-trash"></i>
         </button>
-        `;
+    `;
 
     container.appendChild(row);
 }
+function checkDuplicateService(input) {
+    const value = input.value.trim().toLowerCase();
+    if (!value) return;
+
+    let count = 0;
+
+    document.querySelectorAll("#services_container .service-row input[type='text']")
+        .forEach(inp => {
+            if (inp.value.trim().toLowerCase() === value) {
+                count++;
+            }
+        });
+
+    if (count > 1) {
+        alert("This service is already added.");
+        input.value = "";
+        input.focus();
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     addServiceRow(); // default one row
 });
 
+
 function removeServiceRow(btn) {
-    btn.parentElement.remove();
+    const row = btn.closest(".service-row");
+    if (!row) return;
+
+    row.remove();          // 🔥 removed from DOM
     updateGrandTotal();
 }
+
 
 function getItemsFromTextarea() {
     const text = document.getElementById("item-names").value.trim();
@@ -632,20 +664,17 @@ function saveCateringOrder() {
     /* ================= SERVICES (OPTIONAL) ================= */
 
     const services = [];
+
     document.querySelectorAll("#services_container .service-row").forEach(row => {
-        const nameInput = row.querySelector("input[type='text']");
-        const costInput = row.querySelector(".service-cost");
+        const id = row.dataset.serviceId || null;
+        const name = row.querySelector("input[type='text']")?.value.trim();
+        const cost = Number(row.querySelector(".service-cost")?.value) || 0;
 
-        const name = nameInput ? nameInput.value.trim() : "";
-        const cost = costInput ? Number(costInput.value) : 0;
-
-        if (name && cost > 0) {
-            services.push({
-                name: name,
-                cost: cost
-            });
+        if (name) {
+            services.push({ id, name, cost });
         }
     });
+
 
     if (advance_amount > 0 && !pay_mode) {
         alert("Select payment mode for advance");
@@ -728,14 +757,22 @@ function updateOrder() {
 
     /* ===== SERVICES ===== */
     const services = [];
+
     document.querySelectorAll("#services_container .service-row").forEach(row => {
+        const sno = row.dataset.sno ? Number(row.dataset.sno) : null;
         const name = row.querySelector("input[type='text']")?.value.trim();
         const cost = Number(row.querySelector(".service-cost")?.value) || 0;
 
         if (name) {
-            services.push({ name, cost });
+            services.push({
+                sno: sno,        // 🔥 THIS keeps same row
+                name: name,
+                cost: cost
+            });
         }
+        console.log("services sno", sno);
     });
+
 
     const payload = {
         load: "updateorder",
@@ -1000,17 +1037,16 @@ function fetchmenu(customerid, addressid) {
             const serviceMap = {};
 
             rows.forEach(row => {
-                if (row.services_name) {
-                    serviceMap[row.services_name] = row.services_cost;
+                if (row.services_name && row.sno && !serviceMap[row.sno]) {
+                    serviceMap[row.sno] = {
+                        service_name: row.services_name,
+                        service_cost: row.services_cost,
+                        services_sno: row.sno   // ✅ stable primary key
+                    };
                 }
             });
 
-            renderServices(
-                Object.entries(serviceMap).map(([name, cost]) => ({
-                    service_name: name,
-                    service_cost: cost
-                }))
-            );
+            renderServices(Object.values(serviceMap));
 
             /* ======================
                PLATE INFO
@@ -1052,27 +1088,32 @@ function autoFetchOnDateTimeChange() {
 $(document).on('change', '#order-date, #order-time', function () {
     autoFetchOnDateTimeChange();
 });
-function renderServices(services = []) {
+function renderServices(services) {
     const container = document.getElementById("services_container");
     container.innerHTML = "";
 
-    services.forEach(service => {
+    services.forEach(srv => {
         const row = document.createElement("div");
         row.className = "service-row";
 
+        // 🔥 THIS IS THE MOST IMPORTANT LINE
+        row.dataset.sno = srv.services_sno;
+
         row.innerHTML = `
-            <input type="text" value="${service.service_name}">
+            <input type="text" value="${srv.service_name}">
             <input type="number" class="service-cost"
-                   value="${service.service_cost}"
+                   value="${srv.service_cost}"
                    oninput="updateGrandTotal()">
-            <button class="remove-service" onclick="removeServiceRow(this)">
+            <button type="button" class="remove-service"
+                    onclick="removeServiceRow(this)">
                 <i class="fa fa-trash"></i>
             </button>
-        `;
+            `;
 
         container.appendChild(row);
     });
 }
+
 
 
 function clearMenuUI() {

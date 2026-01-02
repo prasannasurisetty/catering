@@ -447,22 +447,50 @@ fetchbyid(customerid);
 
 
 
-function addUtensilRow(name = "", issued = "", returned = "") {
+function addUtensilRow(sno = null, name = "", issued = "", returned = "") {
 
     const container = document.getElementById("utensils_container");
 
     const row = document.createElement("div");
     row.className = "utensil-row";
 
+    // 🔥 THIS IS THE KEY
+    if (sno) row.dataset.sno = sno;
+
     row.innerHTML = `
-            <input type="text" placeholder="Item Name" value="${name}">
-            <input type="number" placeholder="Issued Qty" value="${issued}">
-            <input type="number" placeholder="Returned Qty" value="${returned}">
-           <i class="fa fa-trash" id="remove-utensil" onclick="removeUtensilRow(this)"></i>
-           `;
+      <input type="text"
+       value="${name}"
+       onblur="checkDuplicateUtensil(this)">
+        <input type="number" value="${issued}">
+        <input type="number" value="${returned}">
+        <i class="fa fa-trash" id="remove-utensil"onclick="removeUtensilRow(this)"></i>
+    `;
 
     container.appendChild(row);
 }
+
+function checkDuplicateUtensil(input) {
+    const value = input.value.trim().toLowerCase();
+    if (!value) return;
+
+    let count = 0;
+
+    document
+        .querySelectorAll("#utensils_container .utensil-row input[type='text']")
+        .forEach(inp => {
+            if (inp.value.trim().toLowerCase() === value) {
+                count++;
+            }
+        });
+
+    if (count > 1) {
+        alert("This utensil is already added.");
+        input.value = "";
+        input.focus();
+    }
+}
+
+
 
 
 // default one row
@@ -493,6 +521,8 @@ function saveUtensils() {
     const utensils = [];
 
     document.querySelectorAll("#utensils_container .utensil-row").forEach(row => {
+
+        const sno = row.dataset.sno ? Number(row.dataset.sno) : null;
         const inputs = row.querySelectorAll("input");
 
         const name = inputs[0].value.trim();
@@ -502,11 +532,13 @@ function saveUtensils() {
         if (!name || issued <= 0) return;
 
         utensils.push({
+            sno: sno,                 // 🔥 THIS keeps same DB row
             utensils_name: name,
             issued_qty: issued,
             returned_qty: returned
         });
     });
+
 
     if (utensils.length === 0) {
         alert("No valid utensils to save");
@@ -596,6 +628,7 @@ function autoLoadUtensils() {
 
             res.data.forEach(item => {
                 addUtensilRow(
+                    item.sno,
                     item.utensils_name,
                     item.issued_qty,
                     item.returned_qty
@@ -603,9 +636,11 @@ function autoLoadUtensils() {
             });
 
             // 🔒 Lock issued qty
+            // 🔒 Lock ONLY utensil name (identity)
             document
-                .querySelectorAll("#utensils_container .utensil-row input:nth-child(2)")
-                .forEach(inp => inp.readOnly = true);
+                .querySelectorAll("#utensils_container .utensil-row input:nth-child(1)")
+                .forEach(inp => inp.readOnly = false); // keep editable if you want rename
+
         }
     });
 }

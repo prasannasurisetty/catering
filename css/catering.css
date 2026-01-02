@@ -524,9 +524,7 @@ body {
     height: 215px;
 }
 
-.remarks {
-    /* border:2px solid blue; */
-}
+
 
 
 #item-names {
@@ -713,7 +711,7 @@ body {
 }
 
 #duplicate-warning {
-    margin-top: 6px;
+    margin-top: -2px;
     font-size: 14px;
     color: red;
     font-weight: bold;

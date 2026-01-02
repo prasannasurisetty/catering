@@ -169,7 +169,7 @@ function fetchutensils($conn)
 
     // 🔹 STEP 2: FETCH UTENSILS USING BILLING ID
     $utensilsSql = "
-        SELECT utensils_name, issued_qty, returned_qty
+        SELECT utensils_name, issued_qty, returned_qty,sno
         FROM catering_utensils
         WHERE utensils_id = $utensils_id
     ";
@@ -195,7 +195,6 @@ function fetchutensils($conn)
 
 function addtensils($conn)
 {
-    global $customerid, $addressid, $orderdate, $ordertime;
     header('Content-Type: application/json');
 
     $data = json_decode(file_get_contents("php://input"), true);
@@ -205,7 +204,7 @@ function addtensils($conn)
         empty($data['customerid']) ||
         empty($data['addressid']) ||
         empty($data['utensils_id']) ||
-        empty($data['utensils'])
+        !isset($data['utensils'])
     ) {
         echo json_encode([
             "status" => "failed",
@@ -219,7 +218,29 @@ function addtensils($conn)
     $utensils_id = (int)$data['utensils_id'];
     $utensils    = $data['utensils'];
 
+    /* ======================
+       FETCH EXISTING UTENSILS
+    ====================== */
+    $dbMap = [];
+    $res = mysqli_query($conn, "
+        SELECT sno FROM catering_utensils
+        WHERE customer_id = $customer_id
+          AND address_id  = $address_id
+          AND utensils_id = $utensils_id
+    ");
+
+    while ($r = mysqli_fetch_assoc($res)) {
+        $dbMap[$r['sno']] = true;
+    }
+
+    $seen = [];
+
+    /* ======================
+       UPDATE / INSERT
+    ====================== */
     foreach ($utensils as $item) {
+
+        $sno = $item['sno'] ?? null;
 
         $name = mysqli_real_escape_string(
             $conn,
@@ -229,104 +250,55 @@ function addtensils($conn)
         $issued_qty   = (int)($item['issued_qty'] ?? 0);
         $returned_qty = (int)($item['returned_qty'] ?? 0);
 
-        if ($name === "") {
-            continue;
+        if ($name === "") continue;
+
+        // ✅ UPDATE existing utensil
+        if ($sno && isset($dbMap[$sno])) {
+
+            mysqli_query(
+                $conn,
+                "UPDATE catering_utensils
+                 SET
+                    utensils_name = '$name',
+                    issued_qty    = $issued_qty,
+                    returned_qty  = $returned_qty
+                 WHERE sno = $sno"
+            );
+
+            $seen[] = $sno;
         }
+        // ➕ INSERT new utensil
+        else {
 
-        // 🔍 CHECK IF UTENSIL ALREADY EXISTS
-        $checkSql = "
-            SELECT sno FROM catering_utensils
-            WHERE
-                customer_id = $customer_id
-                AND address_id = $address_id
-                AND utensils_id = $utensils_id
-                AND utensils_name = '$name'
-            LIMIT 1
-        ";
-
-        $checkRes = mysqli_query($conn, $checkSql);
-
-        if ($checkRes && mysqli_num_rows($checkRes) > 0) {
-
-            // 🔄 UPDATE (issued + returned)
-            $updateSql = "
-                UPDATE catering_utensils
-                SET
-                    issued_qty = $issued_qty,
-                    returned_qty = $returned_qty
-                WHERE
-                    customer_id = $customer_id
-                    AND address_id = $address_id
-                    AND utensils_id = $utensils_id
-                    AND utensils_name = '$name'
-            ";
-
-            mysqli_query($conn, $updateSql);
-        } else {
-
-            // ➕ INSERT (first time issue)
-            $insertSql = "
-                INSERT INTO catering_utensils
-                (customer_id, address_id, utensils_id, utensils_name, issued_qty, returned_qty)
-                VALUES
-                ($customer_id, $address_id, $utensils_id, '$name', $issued_qty, $returned_qty)
-            ";
-
-            mysqli_query($conn, $insertSql);
+            mysqli_query(
+                $conn,
+                "INSERT INTO catering_utensils
+                 (customer_id, address_id, utensils_id, utensils_name, issued_qty, returned_qty)
+                 VALUES
+                 ($customer_id, $address_id, $utensils_id, '$name', $issued_qty, $returned_qty)"
+            );
         }
     }
 
-
-
-    if ($orderdate && $ordertime) {
-
-        // Check if order already exists
-        $checkOrderSql = "
-        SELECT order_id FROM catering_orders
-        WHERE
-            customer_id = $customer_id
-            AND address_id = $address_id
-            AND order_date = '$orderdate'
-            AND order_time = '$ordertime'
-        LIMIT 1
-       ";
-
-        $orderRes = mysqli_query($conn, $checkOrderSql);
-
-        if ($orderRes && mysqli_num_rows($orderRes) > 0) {
-
-            // 🔄 UPDATE utensils_id
-            $updateOrderSql = "
-            UPDATE catering_orders
-            SET utensils_id = $utensils_id
-            WHERE
-                customer_id = $customer_id
-                AND address_id = $address_id
-                AND order_date = '$orderdate'
-                AND order_time = '$ordertime'
-        ";
-
-            mysqli_query($conn, $updateOrderSql);
-        } else {
-
-            // ➕ INSERT new order row
-            $insertOrderSql = "
-            INSERT INTO catering_orders
-            (customer_id, address_id, order_date, order_time, utensils_id)
-            VALUES
-            ($customer_id, $address_id, '$orderdate', '$ordertime', $utensils_id)
-        ";
-
-            mysqli_query($conn, $insertOrderSql);
+    /* ======================
+       DELETE REMOVED UTENSILS
+       (trash → save)
+    ====================== */
+    foreach ($dbMap as $sno => $_) {
+        if (!in_array($sno, $seen)) {
+            mysqli_query(
+                $conn,
+                "DELETE FROM catering_utensils WHERE sno = $sno"
+            );
         }
     }
-
 
     echo json_encode([
-        "status" => "success",
+        "status"  => "success",
         "message" => "Utensils saved successfully"
     ]);
 }
+
 
 
 
@@ -393,7 +365,7 @@ function savepayment($conn)
 {
     header('Content-Type: application/json');
 
-    
+
 
     $data = json_decode(file_get_contents("php://input"), true);
 
