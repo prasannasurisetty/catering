@@ -445,6 +445,7 @@ function savemenu($conn)
     $plate_cost   = (float)($data['plate_cost'] ?? 0);
     $total_amount = (float)($data['total_amount'] ?? 0);
     $grand_total  = (float)($data['grand_total'] ?? 0);
+    $remarks = $data['remarks'] ;
 
     $fooditems    = $data['fooditems'] ?? [];
     $services     = $data['services'] ?? [];
@@ -523,7 +524,7 @@ function savemenu($conn)
       order_count, plate_cost,
       total_amount, services_amount, grand_total,
       paid_amount, payment_status,
-      order_status, delivered_status,
+      order_status, delivered_status,order_remarks,
       admin_id)
      VALUES
      ('$customerid','$addressid','$plate_id','$services_id',
@@ -531,7 +532,8 @@ function savemenu($conn)
       '$plates_count','$plate_cost',
       '$total_amount','$services_amount','$grand_total',
       '$advance_amount','$payment_status',
-      '1','0','$adminid')"
+      '1','0','$remarks',
+      '$adminid')"
         );
         $order_id = mysqli_insert_id($conn);
 

@@ -600,6 +600,7 @@ function saveCateringOrder() {
     const grand_total = Number(document.getElementById("grand_total").value) || 0;
     const advance_amount = Number(document.getElementById("adv-amt").value) || 0;
     const pay_mode = document.getElementById("pay_mode").value || "";
+    const remarks = document.getElementById("remarks-input").value;
 
 
     if (plate_count <= 0 || plate_cost <= 0) {
@@ -667,6 +668,7 @@ function saveCateringOrder() {
         services: services,
         advance_amount: advance_amount,   // ✅ NEW
         pay_mode: pay_mode,
+        remarks: remarks
     };
 
 
@@ -693,6 +695,7 @@ function saveCateringOrder() {
                 document.getElementById("total_amount").value = "";
                 document.getElementById("grand_total").value = "";
                 document.getElementById("services_container").innerHTML = "";
+                document.getElementById("remarks-input").innerHTML = "";
 
             } else {
                 alert(response.message || "Failed to save order");

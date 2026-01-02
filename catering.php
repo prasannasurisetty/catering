@@ -87,6 +87,9 @@
                             <textarea id="item-names" placeholder="Enter Item Names Here...."></textarea>
                             <p id="duplicate-warning"></p>
                         </div>
+                        <div class="remarks">
+                            <textarea id="remarks-input" placeholder="Enter Remarks Here..." maxlength="100"></textarea>
+                        </div>
                     </div>
                     <div class="plate_preview section" id="plate_preview" style="display:none;">
                         <div class="services-order" id="services_order_section">
