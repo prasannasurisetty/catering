@@ -100,10 +100,10 @@
                                 <label>Paid Amount:</label>
                                 <input type="number" id="paid_amount" value='0' min='0'>
                             </div>
-                            <div class="form-row">
+                            <!-- <div class="form-row">
                                 <label>Balance Amount:</label>
                                 <input type="number" id="balance_amount" placeholder="0" readonly>
-                            </div>
+                            </div> -->
                             <div class="form-row">
                                 <label>Paymode:</label>
                                 <select id="pay_mode">
