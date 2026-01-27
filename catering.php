@@ -18,6 +18,9 @@
         crossorigin="anonymous"
         referrerpolicy="no-referrer" />
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 
 
 
@@ -52,10 +55,10 @@
             <div class="catering-ordering">
                 <div class="customer_delivery_addresses" id="addresses_container"></div>
                 <div class="plate-info" id="plate-info" style="display:none">
-                    <div class="plate-row">
+                    <!-- <div class="plate-row">
                         <span id="heading-info">Order Info</span>
 
-                    </div>
+                    </div> -->
                     <div class="plate-row">
                         <label>Order Date:</label>
                         <input type="date" id="order-date">
@@ -67,17 +70,17 @@
 
                     <div class="plate-row">
                         <label>No of Plates:</label>
-                        <input type="number" id="plate_count" oninput="updateSummary(); updateGrandTotal();">
+                        <input type="number" id="plate_count" placeholder="0" oninput="updateSummary(); updateGrandTotal();">
                     </div>
                     <div class="plate-row">
                         <label>Plate Cost:</label>
-                        <input type="number" id="plate_price" oninput="updateSummary(); updateGrandTotal();">
+                        <input type="number" id="plate_price" placeholder="0.00" oninput="updateSummary(); updateGrandTotal();">
                     </div>
 
 
                     <div class="plate-row">
                         <label>Total Amount:</label>
-                        <input type="number" id="total_amount" readonly>
+                        <input type="number" id="total_amount" placeholder="0.00" readonly>
                     </div>
                 </div>
                 <div class="order-menu">
@@ -110,11 +113,11 @@
                         <div class="last-container">
                             <div class="grand">
                                 <div class="grand-total">
-                                
+
                                 </div>
                                 <div class="grand-total">
                                     <label class="grand_total">Grand Total: </label>
-                                    <input type="number" id="grand_total" readonly>
+                                    <input type="number" id="grand_total" placeholder="0.00">
                                 </div>
 
                             </div>
@@ -127,13 +130,13 @@
                                 </div>
                                 <div class="grand-total">
                                     <label class="adv-amt">Advance: </label>
-                                    <input type="number" id="adv-amt">
+                                    <input type="number" id="adv-amt" placeholder="0.00">
                                 </div>
                             </div>
                             <div class="buttons-total">
-                                <button id="save-menu">Save Menu</button>
+                                <button id="save-menu">Save Order</button>
                                 <!-- <button id="set" onclick="setpaymentvariables();">Set</button> -->
-                                <button id="cancel-menu">Cancel Menu</button>
+                                <button id="cancel-menu">Cancel Order</button>
                             </div>
 
                         </div>
@@ -149,7 +152,7 @@
             </div>
         </div>
         <div class="fixed-container">
-            
+
             <div id="ordersList"></div>
         </div>
 

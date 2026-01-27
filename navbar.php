@@ -314,9 +314,19 @@
 
         </ul>
       </div> -->
-
+<!-- 
       <div class="menu-item" id="set" onclick="setpaymentvariables()">
         Billing 
+      </div> -->
+      <div class="menu-item" id="set">
+       <a href="billingnew.php">Billing</a>
+      </div>
+          <div class="menu-item" id="set">
+       <a href="management.php">Management</a>
+      </div>
+      
+      <div class="menu-item" id="set">
+       <a href="reports.php">Reports</a>
       </div>
     </div>
 

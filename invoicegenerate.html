@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TAX INVOICE</title>
+    <style>
+        body {
+            font-family: Arial;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .no-border td {
+            border: none;
+        }
+
+        tfoot td {
+            font-weight: bold;
+        }
+
+        table {
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invoice-page">
+        <h2 class="center">TAX INVOICE</h2>
+
+        <table class="no-border">
+            <tr>
+                <td width="70%">
+                    <b id="orgName"></b><br />
+                    <span id="orgAddress"></span><br />
+                    GSTIN: <span id="orgGstin"></span><br />
+                    CIN: <span id="orgCin"></span><br />
+                    PAN: <span id="orgPan"></span><br />
+                    Phone: <span id="orgPhone"></span><br />
+                    Email: <span id="orgEmail"></span>
+                </td>
+                <td width="30%">
+                    <b>Invoice No:</b> <span id="invoiceNo"></span><br />
+                    <b>Invoice Date:</b> <span id="invoiceDate"></span>
+                </td>
+            </tr>
+        </table>
+
+        <hr />
+
+        <table class="no-border">
+            <tr>
+                <td width="50%">
+                    <b>Bill To:</b><br />
+                    Name: <span id="billName"></span><br />
+                    Phone: <span id="billPhone"></span>
+                </td>
+                <td width="50%">
+                    <b>Billing Phone:</b>
+                    <span id="billphno"></span><br /><br />
+                    <b>Bill Address:</b>
+                    <span id="billAddress"></span>
+                </td>
+            </tr>
+        </table>
+
+        <hr />
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Sno</th>
+                    <th>Order Date</th>
+                    <th>Order Time</th>
+                    <th>Order Amount</th>
+                    <th>Services Amount</th>
+                    <th>CGST</th>
+                    <th>SGST</th>
+                    <th>IGST</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="right">TOTAL</td>
+                    <td class="right" id="tQty"></td>
+                    <td class="right" id="tAmount"></td>
+                    <td class="right" id="tCgst"></td>
+                    <td class="right" id="tSgst"></td>
+                    <td class="right" id="tIgst"></td>
+                    <td class="right" id="tGrand"></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <br />
+
+        <table class="no-border">
+            <tr>
+                <td width="50%">
+                    <b>Total Amount:</b> <span id="sumTotal"></span><br />
+                    <!-- <b>Paid Amount:</b> <span id="paidAmount"></span><br />
+                    <b>Balance Amount:</b> <span id="balanceAmount"></span> -->
+                </td>
+                <td width="50%" class="right">
+                    For <b>VEDYA HOSPITALITIES PVT LTD</b><br /><br />
+                    Authorized Signatory
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

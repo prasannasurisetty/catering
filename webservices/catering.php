@@ -13,6 +13,21 @@ $customerid   = $data['customerid'] ?? null;
 $addressid    = $data['addressid'] ?? null;
 
 
+// $foodtypeid = $data["foodtypeid"] ?? "";
+$cid = $data["cid"] ?? "";
+$aid = $data["aid"] ?? "";
+$fromdate = $data["fromdate"] ?? "";
+$houseno = $data["houseno"] ?? "";
+$link = $data["link"] ?? "";
+$street = $data["street"] ?? "";
+$area = $data["area"] ?? "";
+$phone = $data["phone"] ?? "";
+$landmark = $data["landmark"] ?? "";
+$pincode = $data["pincode"] ?? "";
+$address_id = $data["address_id"] ?? "";
+$default = !empty($data['default']) ? 1 : 0;
+
+
 
 
 if ($load == "savemenu") {
@@ -27,7 +42,120 @@ if ($load == "savemenu") {
     updateorder($conn);
 } else if ($load == "checkorder") {
     checkorder($conn);
+} else if ($load == "addAddress") {
+    addAddress($conn);
+} else if ($load == "editAddress") {
+    editAddress($conn);
+} else if ($load == "deleteAddress") {
+    deleteAddress($conn);
 }
+
+
+
+
+function addAddress($conn)
+{
+    global $cid, $houseno, $street, $area, $landmark, $phone, $link, $pincode, $default;
+
+    $insertQuery = "INSERT INTO `address`(`cid`,`flatno`,`area`,`street`,`landmark`,`address_ph_number`,`addresslink`,`pincode`)
+                    VALUES ('$cid','$houseno','$area','$street','$landmark','$phone','$link','$pincode')";
+    $result = setData($conn, $insertQuery);
+
+    if ($result) {
+        $aid = $conn->insert_id;
+
+        if ($default) {
+            setDefaultAddress($conn, $cid, $aid);
+        }
+
+        echo json_encode([
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Address added successfully!'
+        ]);
+    } else {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'error',
+            'message' => 'Address add failed!'
+        ]);
+    }
+}
+
+function editAddress($conn)
+{
+    global $aid, $cid, $houseno, $street, $area, $landmark, $phone, $link, $pincode, $default;
+
+    $updateQuery = "UPDATE address SET 
+                        flatno='$houseno',
+                        area='$area',
+                        street='$street',
+                        landmark='$landmark',
+                        address_ph_number='$phone',
+                        pincode='$pincode',
+                        addresslink='$link'
+                    WHERE aid='$aid'";
+    $result = setData($conn, $updateQuery);
+
+    if ($result) {
+        if ($default) {
+            setDefaultAddress($conn, $cid, $aid);
+        }
+
+        echo json_encode([
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Address updated successfully!'
+        ]);
+    } else {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'error',
+            'message' => 'Address update failed!'
+        ]);
+    }
+}
+
+
+function deleteAddress($conn)
+{
+    global $aid;
+
+    if (!$aid) {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'error',
+            'message' => 'Address ID missing'
+        ]);
+        return;
+    }
+
+    $deleteQuery = "DELETE FROM address WHERE aid = '$aid'";
+
+    $result = setData($conn, $deleteQuery);
+
+    if ($result == "Record created") {
+        echo json_encode([
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Address deleted!'
+        ]);
+    } else {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'error',
+            'message' => 'Address delete failed!'
+        ]);
+    }
+}
+
+function setDefaultAddress($conn, $cid, $aid)
+{
+    $query = "UPDATE customers SET address_id = '$aid' WHERE CustomerID = '$cid'";
+    return setData($conn, $query);
+}
+
+
 
 
 function checkorder($conn)
@@ -60,7 +188,6 @@ function checkorder($conn)
     ]);
 }
 
-
 function updateorder($conn)
 {
     error_reporting(E_ALL);
@@ -68,10 +195,10 @@ function updateorder($conn)
 
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $customerid   = $data['customerid'] ?? null;
-    $addressid    = $data['addressid'] ?? null;
-    $orderdate    = $data['orderdate'] ?? null;
-    $ordertime    = $data['ordertime'] ?? null;
+    $customerid = $data['customerid'] ?? null;
+    $addressid  = $data['addressid'] ?? null;
+    $orderdate  = $data['orderdate'] ?? null;
+    $ordertime  = $data['ordertime'] ?? null;
 
     $plates_count = (int)($data['plates_count'] ?? 0);
     $plate_cost   = (float)($data['plate_cost'] ?? 0);
@@ -81,11 +208,37 @@ function updateorder($conn)
     $fooditems = $data['fooditems'] ?? [];
     $services  = $data['services'] ?? [];
 
+
+
+    // $statusCheck = getData(
+    //     $conn,
+    //     "SELECT order_status
+    //      FROM catering_orders
+    //      WHERE customer_id='$customerid'
+    //        AND address_id='$addressid'
+    //        AND order_date='$orderdate'
+    //        AND order_time='$ordertime'
+    //      LIMIT 1"
+    // );
+
+    // if (empty($statusCheck)) {
+    //     echo json_encode([
+    //         "status" => "error",
+    //         "message" => "Order not found"
+    //     ]);
+    //     return;
+    // }
+
+    // if ((int)$statusCheck[0]['order_status'] === 0) {
+    //     echo json_encode([
+    //         "status" => "error",
+    //         "message" => "Cancelled order cannot be updated"
+    //     ]);
+    //     return;
+    // }
+
     if (!$customerid || !$addressid || !$orderdate || !$ordertime) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Missing required data"
-        ]);
+        echo json_encode(["status" => "error", "message" => "Missing required data"]);
         return;
     }
 
@@ -93,10 +246,12 @@ function updateorder($conn)
 
     try {
 
-        /* ================= FETCH ORDER ================= */
+        /* =====================================================
+           FETCH ORDER (SINGLE ROW – NO NEW INSERT)
+        ===================================================== */
         $order = getData(
             $conn,
-            "SELECT plate_id, services_id
+            "SELECT order_id, plate_id, services_id
              FROM catering_orders
              WHERE customer_id='$customerid'
                AND address_id='$addressid'
@@ -108,169 +263,125 @@ function updateorder($conn)
              LIMIT 1"
         );
 
-        if (empty($order)) {
+        if (!$order) {
             throw new Exception("Order not found or cannot be updated");
         }
 
-        $plate_id    = (int)$order[0]['plate_id'];
-        $services_id = $order[0]['services_id']; // may be NULL
+        $order_id   = $order[0]['order_id'];
+        $plate_id   = $order[0]['plate_id'];
+        $services_id = $order[0]['services_id'];
 
-        /* ====================================================
-           FOOD ITEMS – STRING DIFF (UNCHANGED)
-        ==================================================== */
+        /* =====================================================
+           FOOD ITEMS (PLATE_ID BASED DIFF – NO DUPLICATES)
+        ===================================================== */
 
         $dbItems = getData(
             $conn,
-            "SELECT item FROM catering_fooditems
-             WHERE customer_id='$customerid'
-               AND address_id='$addressid'
-               AND plate_id='$plate_id'
-               AND order_date='$orderdate'"
+            "SELECT item FROM catering_fooditems WHERE plate_id='$plate_id'"
         );
-
         $dbSet = [];
         foreach ($dbItems as $row) {
-            $dbSet[$row['item']] = true;
+            $key = strtolower(trim($row['item']));   // 🔥 NORMALIZE
+            $dbSet[$key] = $row['item'];              // keep original value
         }
-
         $uiSet = [];
         foreach ($fooditems as $item) {
-            $item = mysqli_real_escape_string($conn, trim($item));
-            if ($item) {
-                $uiSet[$item] = true;
+            $clean = strtolower(trim($item));         // 🔥 NORMALIZE
+            if ($clean !== '') {
+                $uiSet[$clean] = mysqli_real_escape_string($conn, trim($item));
             }
         }
 
-        foreach ($dbSet as $item => $_) {
-            if (!isset($uiSet[$item])) {
-                setData(
-                    $conn,
-                    "DELETE FROM catering_fooditems
-                     WHERE customer_id='$customerid'
-                       AND address_id='$addressid'
-                       AND plate_id='$plate_id'
-                       AND item='$item'
-                       AND order_date='$orderdate'"
-                );
-            }
-        }
-
-        foreach ($uiSet as $item => $_) {
-            if (!isset($dbSet[$item])) {
+        // ➕ INSERT NEW ITEMS
+        foreach ($uiSet as $key => $originalItem) {
+            if (!isset($dbSet[$key])) {
                 setData(
                     $conn,
                     "INSERT INTO catering_fooditems
-                     (customer_id,address_id,plate_id,item,order_date)
-                     VALUES
-                     ('$customerid','$addressid','$plate_id','$item','$orderdate')"
+             (customer_id,address_id,plate_id,item,order_date)
+             VALUES
+             ('$customerid','$addressid','$plate_id','$originalItem','$orderdate')"
                 );
             }
         }
 
-        /* ====================================================
-           SERVICES – ID BASED UPDATE / INSERT / DELETE
-        ==================================================== */
+        // ❌ DELETE REMOVED ITEMS
+        foreach ($dbSet as $key => $originalItem) {
+            if (!isset($uiSet[$key])) {
+                setData(
+                    $conn,
+                    "DELETE FROM catering_fooditems
+             WHERE plate_id='$plate_id'
+               AND item='$originalItem'"
+                );
+            }
+        }
 
-        $hasServices = false;
+        /* =====================================================
+           SERVICES (SERVICES_ID BASED DIFF – SAFE UPDATE)
+        ===================================================== */
+
         $services_amount = 0;
 
-        /* ---- Fetch DB services (WITH ID) ---- */
+        $dbServices = [];
         if ($services_id) {
-            $dbServices = getData(
+            $rows = getData(
                 $conn,
                 "SELECT sno, services_name, services_cost
                  FROM catering_services
-                 WHERE customer_id='$customerid'
-                   AND address_id='$addressid'
-                   AND services_id='$services_id'"
+                 WHERE services_id='$services_id'"
             );
-        } else {
-            $dbServices = [];
+            foreach ($rows as $srv) {
+                $dbServices[$srv['sno']] = $srv;
+            }
         }
 
-        $dbSrvMap = [];
-        foreach ($dbServices as $srv) {
-            $dbSrvMap[$srv['sno']] = $srv;
-        }
+        $uiIds = [];
 
-        /* ---- UI services ---- */
-        $uiSrvList = [];
         foreach ($services as $srv) {
             $name = mysqli_real_escape_string($conn, trim($srv['name'] ?? ''));
             if ($name === '') continue;
 
-            $uiSrvList[] = [
-                'sno'   => $srv['sno'] ?? null,
-                'name' => $name,
-                'cost' => (float)($srv['cost'] ?? 0)
-            ];
-        }
+            $cost = (float)($srv['cost'] ?? 0);
+            $services_amount += $cost;
 
-        $seenIds = [];
+            // 🔁 UPDATE EXISTING
+            if (!empty($srv['sno']) && isset($dbServices[$srv['sno']])) {
 
-        /* ---- UPDATE / INSERT ---- */
-        foreach ($uiSrvList as $srv) {
-
-            $hasServices = true;
-            $services_amount += $srv['cost'];
-
-            // UPDATE existing
-            if ($srv['sno'] && isset($dbSrvMap[$srv['sno']])) {
-
-                $db = $dbSrvMap[$srv['sno']];
-
-                if (
-                    $db['services_name'] !== $srv['name'] ||
-                    (float)$db['services_cost'] !== (float)$srv['cost']
-                ) {
+                $db = $dbServices[$srv['sno']];
+                if ($db['services_name'] !== $name || (float)$db['services_cost'] !== $cost) {
                     setData(
                         $conn,
                         "UPDATE catering_services
-                         SET services_name='{$srv['name']}',
-                             services_cost='{$srv['cost']}'
+                         SET services_name='$name',
+                             services_cost='$cost'
                          WHERE sno='{$srv['sno']}'"
                     );
                 }
-
-                $seenIds[] = $srv['sno'];
+                $uiIds[] = $srv['sno'];
             }
-            // INSERT new
+            // ➕ INSERT NEW
             else {
                 setData(
                     $conn,
                     "INSERT INTO catering_services
                      (customer_id,address_id,services_id,services_name,services_cost)
                      VALUES
-                     ('$customerid','$addressid','$services_id',
-                      '{$srv['name']}','{$srv['cost']}')"
+                     ('$customerid','$addressid','$services_id','$name','$cost')"
                 );
             }
         }
 
-        /* ---- DELETE removed services ---- */
-        foreach ($dbSrvMap as $id => $_) {
-            if (!in_array($id, $seenIds)) {
-                setData(
-                    $conn,
-                    "DELETE FROM catering_services WHERE sno='$id'"
-                );
+        // ❌ DELETE REMOVED SERVICES
+        foreach ($dbServices as $id => $_) {
+            if (!in_array($id, $uiIds)) {
+                setData($conn, "DELETE FROM catering_services WHERE sno='$id'");
             }
         }
 
-        /* ---- CLEAR services_id if none left ---- */
-        if (!$hasServices) {
-            setData(
-                $conn,
-                "UPDATE catering_orders
-                 SET services_id = NULL
-                 WHERE customer_id='$customerid'
-                   AND address_id='$addressid'
-                   AND order_date='$orderdate'
-                   AND order_time='$ordertime'"
-            );
-        }
-
-        /* ================= UPDATE ORDER TOTALS ================= */
+        /* =====================================================
+           UPDATE ORDER TOTALS (SAME ROW)
+        ===================================================== */
 
         setData(
             $conn,
@@ -280,32 +391,23 @@ function updateorder($conn)
                 total_amount    = '$total_amount',
                 services_amount = '$services_amount',
                 grand_total     = '$grand_total'
-             WHERE customer_id='$customerid'
-               AND address_id='$addressid'
-               AND order_date='$orderdate'
-               AND order_time='$ordertime'"
+             WHERE order_id='$order_id'"
         );
 
         mysqli_commit($conn);
 
         echo json_encode([
-            "status"  => "success",
+            "status" => "success",
             "message" => "Order updated successfully"
         ]);
     } catch (Exception $e) {
-
         mysqli_rollback($conn);
-
         echo json_encode([
-            "status"  => "error",
+            "status" => "error",
             "message" => $e->getMessage()
         ]);
     }
 }
-
-
-
-
 
 
 
@@ -315,21 +417,22 @@ function fetchmenu($conn)
 
     $sql = "
         SELECT 
+        co.order_remarks,
             co.order_count,
             co.plate_cost,
             co.total_amount,
             cf.item,
             cs.sno,
             cs.services_name,
-            cs.services_cost
+            cs.services_cost,
+            co.order_status
         FROM catering_orders co
         LEFT JOIN catering_fooditems cf ON cf.plate_id = co.plate_id
-        JOIN catering_services cs ON cs.services_id = co.services_id
+        LEFT JOIN catering_services cs ON cs.services_id = co.services_id
         WHERE co.customer_id = '$customerid'
           AND co.address_id = '$addressid'
           AND co.order_date = '$orderdate'
           AND co.order_time = '$ordertime'
-          AND co.order_status = 1
         GROUP BY cf.item,cs.sno,cs.services_name, cs.services_cost
     ";
 
@@ -339,7 +442,8 @@ function fetchmenu($conn)
         echo json_encode([
             "code" => 200,
             "status" => "success",
-            "data" => $result
+            "data" => $result,
+            "order_status" => $result[0]['order_status']
         ]);
     } else {
         echo json_encode([
@@ -350,16 +454,17 @@ function fetchmenu($conn)
     }
 }
 
-
 function allorders($conn)
 {
     $sql = "SELECT 
+        co.order_id,
     co.order_date,
     co.order_time,
     co.customer_id,
     c.CustomerName,
     a.address_ph_number,
-    a.aid,
+    a.aid AS address_id ,
+    co.order_status,
     CONCAT(
         a.flatno, ', ',
         a.area, ', ',
@@ -370,7 +475,10 @@ function allorders($conn)
     FROM catering_orders co
     JOIN customers c ON c.CustomerID = co.customer_id
     JOIN address a ON a.aid = co.address_id
-     WHERE co.order_status = 1 AND co.delivered_status =0 ";
+    WHERE co.delivered_status != 1 AND co.order_status = 1
+    
+   -- AND co.order_status = 1  
+   ";
     $result = getData($conn, $sql);
 
     if (!empty($result)) {
@@ -387,10 +495,6 @@ function allorders($conn)
         ]);
     }
 }
-
-
-
-
 
 function cancelmenu($conn)
 {
@@ -430,8 +534,6 @@ function cancelmenu($conn)
         ]);
     }
 }
-
-
 
 function savemenu($conn)
 {
@@ -615,246 +717,3 @@ function savemenu($conn)
         ]);
     }
 }
-
-
-
-
-// function updateorder($conn)
-// {
-//     error_reporting(E_ALL);
-//     ini_set('display_errors', 1);
-
-//     $data = json_decode(file_get_contents("php://input"), true);
-
-//     $customerid   = $data['customerid'] ?? null;
-//     $addressid    = $data['addressid'] ?? null;
-//     $orderdate    = $data['orderdate'] ?? null;
-//     $ordertime    = $data['ordertime'] ?? null;
-
-//     $plates_count = (int)($data['plates_count'] ?? 0);
-//     $plate_cost   = (float)($data['plate_cost'] ?? 0);
-//     $total_amount = (float)($data['total_amount'] ?? 0);
-//     $grand_total  = (float)($data['grand_total'] ?? 0);
-
-//     $fooditems = $data['fooditems'] ?? [];
-//     $services  = $data['services'] ?? [];
-
-//     if (!$customerid || !$addressid || !$orderdate || !$ordertime) {
-//         echo json_encode([
-//             "status" => "error",
-//             "message" => "Missing required data"
-//         ]);
-//         return;
-//     }
-
-//     mysqli_begin_transaction($conn);
-
-//     try {
-
-//         /* ================= FETCH ORDER IDS ================= */
-//         $order = getData(
-//             $conn,
-//             "SELECT plate_id, services_id
-//              FROM catering_orders
-//              WHERE customer_id='$customerid'
-//                AND address_id='$addressid'
-//                AND order_date='$orderdate'
-//                AND order_time='$ordertime'
-//                AND order_status != 0
-//                AND payment_status = 0
-//                AND delivered_status = 0
-//              LIMIT 1"
-//         );
-
-//         if (empty($order)) {
-//             throw new Exception("Order not found or cannot be updated");
-//         }
-
-//         $plate_id    = (int)$order[0]['plate_id'];
-//         $services_id = $order[0]['services_id']; // may be NULL
-
-//         /* ====================================================
-//            FOOD ITEMS – STRING BASED DIFF
-//         ==================================================== */
-
-//         $dbItems = getData(
-//             $conn,
-//             "SELECT item FROM catering_fooditems
-//              WHERE customer_id='$customerid'
-//                AND address_id='$addressid'
-//                AND plate_id='$plate_id'
-//                AND order_date='$orderdate'"
-//         );
-
-//         $dbSet = [];
-//         foreach ($dbItems as $row) {
-//             $dbSet[$row['item']] = true;
-//         }
-
-//         $uiSet = [];
-//         foreach ($fooditems as $item) {
-//             $item = mysqli_real_escape_string($conn, trim($item));
-//             if ($item) {
-//                 $uiSet[$item] = true;
-//             }
-//         }
-
-//         foreach ($dbSet as $item => $_) {
-//             if (!isset($uiSet[$item])) {
-//                 setData(
-//                     $conn,
-//                     "DELETE FROM catering_fooditems
-//                      WHERE customer_id='$customerid'
-//                        AND address_id='$addressid'
-//                        AND plate_id='$plate_id'
-//                        AND item='$item'
-//                        AND order_date='$orderdate'"
-//                 );
-//             }
-//         }
-
-//         foreach ($uiSet as $item => $_) {
-//             if (!isset($dbSet[$item])) {
-//                 setData(
-//                     $conn,
-//                     "INSERT INTO catering_fooditems
-//                      (customer_id,address_id,plate_id,item,order_date)
-//                      VALUES
-//                      ('$customerid','$addressid','$plate_id','$item','$orderdate')"
-//                 );
-//             }
-//         }
-
-//         /* ====================================================
-//            SERVICES – DIFF + CLEAR services_id IF EMPTY
-//         ==================================================== */
-
-//         $hasServices = false;
-//         $services_amount = 0;
-
-//         if ($services_id) {
-
-//             $dbServices = getData(
-//                 $conn,
-//                 "SELECT services_id,services_name, services_cost
-//                  FROM catering_services
-//                  WHERE customer_id='$customerid'
-//                    AND address_id='$addressid'
-//                    AND services_id='$services_id'"
-//             );
-
-//             $dbSrvMap = [];
-//             foreach ($dbServices as $srv) {
-//                 $dbSrvMap[$srv['services_id']]  = $srv;
-//             }
-//         } else {
-//             $dbSrvMap = [];
-//         }
-
-//         $uiSrvMap = [];
-//         foreach ($services as $srv) {
-//             $name = mysqli_real_escape_string($conn, trim($srv['name'] ?? ''));
-//             if ($name === '') continue;
-
-//             $cost = (float)($srv['cost'] ?? 0);
-//             $uiSrvMap[$name] = $cost;
-//         }
-
-//         foreach ($dbSrvMap as $name => $oldCost) {
-
-//             if (isset($uiSrvMap[$name])) {
-
-//                 $hasServices = true;
-//                 $newCost = $uiSrvMap[$name];
-
-//                 if ($newCost != $oldCost) {
-//                     setData(
-//                         $conn,
-//                         "UPDATE catering_services
-//                          SET services_cost='$newCost'
-//                          WHERE customer_id='$customerid'
-//                            AND address_id='$addressid'
-//                            AND services_id='$services_id'
-//                            AND services_name='$name'"
-//                     );
-//                 }
-
-//                 $services_amount += $newCost;
-//                 unset($uiSrvMap[$name]);
-//             } else {
-
-//                 setData(
-//                     $conn,
-//                     "DELETE FROM catering_services
-//                      WHERE customer_id='$customerid'
-//                        AND address_id='$addressid'
-//                        AND services_id='$services_id'
-//                        AND services_name='$name'"
-//                 );
-//             }
-//         }
-
-//         foreach ($uiSrvMap as $name => $cost) {
-
-//             $hasServices = true;
-
-//             setData(
-//                 $conn,
-//                 "INSERT INTO catering_services
-//                  (customer_id,address_id,services_id,services_name,services_cost)
-//                  VALUES
-//                  ('$customerid','$addressid','$services_id',
-//                   '$name','$cost')"
-//             );
-
-//             $services_amount += $cost;
-//         }
-
-//         /* ===== CLEAR services_id IF NO SERVICES LEFT ===== */
-//         if (!$hasServices) {
-
-//             setData(
-//                 $conn,
-//                 "UPDATE catering_orders
-//                  SET services_id = NULL
-//                  WHERE customer_id='$customerid'
-//                    AND address_id='$addressid'
-//                    AND order_date='$orderdate'
-//                    AND order_time='$ordertime'"
-//             );
-
-//             $services_id = null;
-//         }
-
-//         /* ================= UPDATE ORDER TOTALS ================= */
-
-//         setData(
-//             $conn,
-//             "UPDATE catering_orders SET
-//                 order_count     = '$plates_count',
-//                 plate_cost      = '$plate_cost',
-//                 total_amount    = '$total_amount',
-//                 services_amount = '$services_amount',
-//                 grand_total     = '$grand_total'
-//              WHERE customer_id='$customerid'
-//                AND address_id='$addressid'
-//                AND order_date='$orderdate'
-//                AND order_time='$ordertime'"
-//         );
-
-//         mysqli_commit($conn);
-
-//         echo json_encode([
-//             "status"  => "success",
-//             "message" => "Order updated successfully"
-//         ]);
-//     } catch (Exception $e) {
-
-//         mysqli_rollback($conn);
-
-//         echo json_encode([
-//             "status"  => "error",
-//             "message" => $e->getMessage()
-//         ]);
-//     }
-// }

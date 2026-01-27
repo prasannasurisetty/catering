@@ -24,13 +24,16 @@
         <div class="customer_search">
 
             <div class="customer_details">
-                <!-- <p class="backpage"><i class="fa-solid fa-arrow-left" style="color:white;font-weight:bold;"></i></p> -->
+                <p class="backpage" onclick="setpaymentvariables()" title="Go Back">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </p>
+
                 <p class="customer_id"></p>
                 <p class="customer_name"></p>
                 <p class="customer_ph"></p>
                 <p class="orderdate"></p>
                 <p class="ordertime"></p>
-                <p class="grandtotal"></p>
+                <!-- <p class="grandtotal"></p> -->
             </div>
 
 
@@ -74,7 +77,8 @@
 
                 </div>
                 <div class="order-payments contain">
-                    <div class="payment subcontain">
+                    <div class="payment subcontain" id="payment_section">
+
                         <div class="form-group">
                             <div class="form-row">
                                 <label><b>Grand Total:</b></label>
@@ -100,10 +104,7 @@
                                 <label>Paid Amount:</label>
                                 <input type="number" id="paid_amount" value='0' min='0'>
                             </div>
-                            <!-- <div class="form-row">
-                                <label>Balance Amount:</label>
-                                <input type="number" id="balance_amount" placeholder="0" readonly>
-                            </div> -->
+
                             <div class="form-row">
                                 <label>Paymode:</label>
                                 <select id="pay_mode">
@@ -123,8 +124,46 @@
                             </div>
 
 
+
+
                         </div>
                     </div>
+
+                    <div class="refund subcontain" id="refund_section">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <label><b>Grand Total:</b></label>
+                                <input type="number" id="refund_grand_total" readonly>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Advance Amount:</label>
+                                <input type="number" id="refund_advance_amount" readonly>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Refund Amount:</label>
+                                <input type="number" id="refund_amount">
+                            </div>
+
+                            <div class="form-row">
+                                <label>Paymode:</label>
+                                <select id="refund_pay_mode"></select>
+                            </div>
+
+                            <div class="form-row">
+                                <label>Pay Date:</label>
+                                <input type="date" id="refund_pay_date">
+                            </div>
+
+                            <div class="form-row">
+                                <button type="button" onclick="refund()">Refund</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+
 
                 </div>
 

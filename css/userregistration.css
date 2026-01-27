@@ -1,7 +1,7 @@
 :root {
     /* --primary: #ff5200;
     --secondary: #ff9151; */
-    /* --border: #d0d0d0; */
+  
     --text: #111;
 }
 :root {
@@ -22,6 +22,7 @@
     --ease: cubic-bezier(0.2, 0.9, 0.3, 1);
     --card-gap: 10px;
      --bg: #f7f8fa;
+     --border: #d0d0d0; 
 }
 
 * {

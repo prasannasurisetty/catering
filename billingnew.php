@@ -15,6 +15,8 @@
     <link rel="stylesheet" type="text/css" href="css/billingnew.css">
     <script src="scriptfiles/billingnew.js" defer></script>
     <!-- <script src="scriptfiles/billing.js" defer></script> -->
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 </head>
 
@@ -102,7 +104,7 @@
 
                                 </div>
                                 <div class="form-rows">
-                                    <button type="button" id="payment-button" onclick="savepayment()">Pay</button>
+                                    <button type="button" id="payment-button" onclick="savepayment();">Pay</button>
                                 </div>
                             </div>
                         </form>
@@ -114,29 +116,38 @@
                             <h3 class="headings" style="color:#8D3A08;">Refund Details</h3>
                         </center>
                         <form class="form-bill">
+                               <div class="form-group">
+                                <div class="form-rows">
+                                    <label>Order Date:</label>
+                                    <input type="date" id="refund_order_date" readonly>
+                                </div>
+                                <div class="form-rows">
+                                    <label>Order Time:</label>
+                                    <input type="time" id="refund_order_time" readonly>
+                                </div>
+                            </div>
                             <div class="form-group">
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <label><b>Grand Total:</b></label>
                                     <input type="number" id="refund_grand_total" readonly>
                                 </div>
 
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <label>Advance Amount:</label>
                                     <input type="number" id="refund_advance_amount" readonly>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <label>Refund Amount:</label>
                                     <input type="number" id="refund_amount">
                                 </div>
-                                <div class="form-row">
-                                    <label>Refund Amount:</label>
-                                    <input type="number" id="refund_amount">
+                                <div class="form-rows">
+                             
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <label>Paymode:</label>
                                     <select id="refund_pay_mode"></select>
                                 </div>
@@ -146,12 +157,12 @@
                             </div>
                             <div class="form-group">
 
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <label>Pay Date:</label>
                                     <input type="date" id="refund_pay_date">
                                 </div>
 
-                                <div class="form-row">
+                                <div class="form-rows">
                                     <button type="button" id="refund_button" onclick="refund()">Refund</button>
                                 </div>
 

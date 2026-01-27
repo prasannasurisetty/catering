@@ -83,14 +83,16 @@
 
 
 
-.payment .form-row {
+.payment .form-row,
+.refund .form-row {
     display: flex;
     align-items: center;
     /* justify-content: space-between; */
     padding: 10px 0;
 }
 
-.payment .form-row label {
+.payment .form-row label,
+.refund .form-row label {
     width: 45%;
     font-size: 18px;
     font-weight: 600;
@@ -98,7 +100,8 @@
 }
 
 
-.payment .form-row input {
+.payment .form-row input,
+.refund .form-row input {
     width: 40%;
     padding: 6px 4px;
     font-size: 14px;
@@ -109,7 +112,8 @@
     border-radius: 4px;
 }
 
-.payment .form-row select {
+.payment .form-row select,
+.refund .form-row select {
     width: 42%;
     padding: 6px 4px;
     font-size: 14px;
@@ -122,11 +126,14 @@
 
 
 .payment .form-row input:focus,
-.payment .form-row select:focus {
+.payment .form-row select:focus,
+.refund .form-row input:focus,
+.refund .form-row select:focus {
     border-bottom: 2px solid var(--color-dark);
 }
 
-.payment .form-row button {
+.payment .form-row button,
+.refund .form-row button {
     width: 30%;
     padding: 10px;
     font-size: 15px;
@@ -138,7 +145,8 @@
     cursor: pointer;
 }
 
-.payment .form-row button:hover {
+.payment .form-row button:hover,
+.refund .form-row button:hover {
     background-color: var(--color-dark);
 }
 
@@ -196,11 +204,11 @@
 
 .fixed-container {
 
-    width:25%;
-    height: 91vh;
-    position: fixed;
+    width: 25%;
+    height: 81vh;
+    /* position: fixed; */
     right: 0;
-    height: calc(100vh - 70px);
+    /* height: calc(100vh - 70px); */
     background: #fff;
     border-left: 1px solid #ddd;
     padding: 10px;
@@ -353,7 +361,7 @@ table th {
     height: 15vh;
     display: flex;
     flex-direction: column;
-    
+
 
 }
 
@@ -434,7 +442,7 @@ table th {
     height: 8vh;
     /* border: 2px solid green; */
     display: flex;
-    gap:15px;
+    gap: 15px;
     align-items: center;
 }
 
@@ -464,4 +472,21 @@ table th {
     border-radius: 6px;
     /* margin-right: 20px; */
     border: none;
+}
+
+#payment_section,
+#refund_section {
+    display: none;
+}
+
+
+.refund-closed-msg {
+    margin-top: 15px;
+    padding: 12px;
+    background: #fff3cd;
+    border: 1px solid #ffb020;
+    color: #8a4b00;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
 }

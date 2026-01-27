@@ -2,33 +2,130 @@ let alreadyPaidAmount = 0;
 let utensils_id = null;
 
 
-var customerid = localStorage.getItem('customerid');
-var addressid = localStorage.getItem('addressid');
-var orderdate = localStorage.getItem('orderdate');
-var ordertime = localStorage.getItem('ordertime');
-var grandtotal = localStorage.getItem('grandtotal');
+let customerid = localStorage.getItem('customerid');
+let addressid = localStorage.getItem('addressid');
+let orderdate = localStorage.getItem('orderdate');
+let ordertime = localStorage.getItem('ordertime');
+let order_id = localStorage.getItem('order_id');
+let order_status = Number(localStorage.getItem('orderstatus'));
 
-console.log("printtt", customerid, addressid, orderdate, ordertime, grandtotal);
 
+
+// console.log("printtt", customerid, addressid, orderdate, ordertime, order_status);
+
+
+function applyOrderStatusLocks() {
+
+    // 🔓 RESET FIRST
+    $('.add-utensils-text').css({ 'pointer-events': '', 'opacity': '' });
+    $('#utensils_container input').prop('disabled', false);
+    $('#utensils_container i.fa-trash').css({ 'pointer-events': '', 'opacity': '' });
+    $('#save-utensils-btn').prop('disabled', false).css('opacity', '');
+    $('#delivered_time').prop('disabled', false);
+    $('#delivered').prop('disabled', false).css('opacity', '');
+    $('#order-cancelled-msg').remove();
+
+    // 0 = cancelled
+    if (order_status === 0) {
+
+        /* ======================
+           🔒 DISABLE UTENSILS
+        ====================== */
+
+        // Add utensil button
+        $('.add-utensils-text')
+            .css('pointer-events', 'none')
+            .css('opacity', '0.5');
+
+        // Utensil inputs
+        $('#utensils_container input')
+            .prop('disabled', true);
+
+        // Trash icon
+        $('#utensils_container i.fa-trash')
+            .css('pointer-events', 'none')
+            .css('opacity', '0.4');
+
+        // Save utensils button
+        $('#save-utensils-btn')
+            .prop('disabled', true)
+            .css('opacity', '0.6');
+
+        /* ======================
+           🔒 DISABLE DELIVERY
+        ====================== */
+
+        $('#delivered_time')
+            .prop('disabled', true);
+
+        $('#delivered')
+            .prop('disabled', true)
+            .css('opacity', '0.6');
+
+        /* ======================
+           🔒 OPTIONAL INFO MESSAGE
+        ====================== */
+
+        if (!$('#order-cancelled-msg').length) {
+            $('.order-utensils').prepend(`
+                <div id="order-cancelled-msg" style="
+                    margin-bottom:10px;
+                    padding:10px;
+                    background:#fff3cd;
+                    border:1px solid #ffecb5;
+                    color:#664d03;
+                    font-weight:600;
+                    text-align:center;
+                    border-radius:6px;">
+                    ⚠️ Order is cancelled. Editing is disabled.
+                </div>
+            `);
+        }
+    }
+}
+
+
+function hasOrderContext() {
+    // return customerid && addressid && orderdate && ordertime && order_id;
+}
 
 $(document).ready(function () {
 
-    if (!customerid || !addressid || !orderdate || !ordertime) {
-        alert("Invalid order context. Please go back and select order again.");
-        return;
+    if (!hasOrderContext()) {
+
+     
+        $('.order-utensils').hide();
+        $('#payment_section').hide();
+        $('#refund_section').hide();
+
+     
+        if (!$('#select-order-msg').length) {
+            $('.payment-container').prepend(`
+                <div id="select-order-msg" style="
+                    margin:15px;
+                    padding:12px;
+                    background:#e7f1ff;
+                    border:1px solid #b6d4fe;
+                    color:#084298;
+                    border-radius:6px;
+                    font-weight:600;
+                    text-align:center;">
+                    ℹ️ Please select an order from the right panel to view billing details.
+                </div>
+            `);
+        }
+
+        return; // ⛔ STOP here
     }
 
-    // ✅ SET TOTAL AMOUNT FROM LOCALSTORAGE
-    // $('#total_amount').val(grandtotal);
+    // ✅ ONLY runs when order exists
     fetchTotalAmount();
-
-    // paymentdetails();
     paymenthistory();
     fetchbyid(customerid);
-    autoLoadUtensils();
-
-
+    applyOrderStatusLocks();
+    togglePaymentOrRefundUI();
 });
+
 
 function recalculatePayment() {
 
@@ -46,11 +143,6 @@ function recalculatePayment() {
 
     $('#totalamount_paid').val(totalAmountPaid);
 
-    // 3️⃣ Balance calculation
-    let balance = totalAmountPaid - paidAmount;
-    if (balance < 0) balance = 0;
-
-    $('#balance_amount').val(balance);
 }
 
 $('#recovery_amount, #paid_amount').on('input', function () {
@@ -58,70 +150,13 @@ $('#recovery_amount, #paid_amount').on('input', function () {
 });
 
 
-function fetchTotalAmount() {
 
-    const payload = {
-        load: "fetchtotalamount",
-        customerid: customerid,
-        addressid: addressid,
-        orderdate: orderdate,
-        ordertime: ordertime
-    };
-
-    $.ajax({
-        type: "POST",
-        url: "./webservices/cateringservicespayments.php",
-        data: JSON.stringify(payload),
-        contentType: "application/json",
-        dataType: "json",
-
-        success: function (response) {
-
-            if (response.status !== "success") return;
-
-            let grandTotal = Number(response.grand_total) || 0;
-            let paidAmount = Number(response.paid_amount) || 0;
-            let recovery = Number(response.recovery_amount) || 0;
-            let balance = Number(response.amounttobe_paid) || 0;
-
-            $('#grand_total').val(grandTotal);
-            $('#advance_amount').val(paidAmount);
-            $('#amounttobe_paid').val(balance);
-            $('#recovery_amount').val(recovery);
-            $('#payment_amount').val(paidAmount);
-
-
-            // 🔒 PAYMENT CLOSED
-            if (response.payment_status == 1) {
-                closePaymentForm();
-            }
-            // 🔓 PAYMENT OPEN
-            else {
-                openPaymentForm();
-                recalculatePayment();
-            }
-        },
-
-        error: function () {
-            alert("Error fetching total amount");
-        }
-    });
-}
-$(document).ready(function () {
-
-    // Hide payment amount until payment is closed
-    $('#payment_amount_row').hide();
-});
 
 
 function openPaymentForm() {
 
     $('.form-row').show();
 
-    // Always hide advance amount
-    // $('#advance_amount').closest('.form-row').hide();
-
-    // ❌ Hide payment amount when payment is OPEN
     $('#payment_amount_row').hide();
 
     $('#recovery_amount').prop('readonly', false);
@@ -173,74 +208,6 @@ function closePaymentForm() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-function savepayment() {
-    console.log("Save payments");
-
-    if (
-        !$('#paid_amount').val() ||
-        !$('#pay_mode').val() ||
-        !$('#pay_date').val()
-    ) {
-        alert("Please fill all payment fields");
-        return;
-    }
-
-    const payload = {
-        load: "savepayment",
-        customerid: customerid,
-        addressid: addressid,
-        orderdate: orderdate, // ✅ REQUIRED
-        ordertime: ordertime, // ✅ REQUIRED
-        recoveryamt: Number($('#recovery_amount').val()),
-        paidamount: Number($('#paid_amount').val()),
-        paymode: $('#pay_mode').val(),
-        paydate: $('#pay_date').val()
-    };
-    console.log("Save payments payload", payload);
-
-    $.ajax({
-        type: "POST",
-        url: "./webservices/cateringservicespayments.php",
-        data: JSON.stringify(payload),
-        contentType: "application/json",
-        dataType: "json",
-
-        success: function (response) {
-            console.log("Save payments response", response);
-
-            if (response && response.status === "success") {
-
-                alert("Payment successful");
-
-                // ✅ UPDATE TOTALS
-                $('#total_amount').val(response.grand_total ?? $('#total_amount').val());
-                $('#paid_amount').val("");
-                // 🔁 REFRESH HISTORY
-                paymenthistory();
-                fetchTotalAmount();
-
-            } else {
-                alert(response.message || "Payment failed");
-            }
-        },
-
-        error: function (xhr, status, error) {
-            console.error("Payment error:", error);
-            alert("Error while processing payment");
-        }
-    });
-}
 
 
 
@@ -341,7 +308,7 @@ function fetchbyid(customerid) {
                 const phEl = document.querySelector(".customer_ph");
                 const odE1 = document.querySelector(".orderdate");
                 const otE1 = document.querySelector(".ordertime");
-                const gtE1 = document.querySelector(".grandtotal");
+                // const gtE1 = document.querySelector(".grandtotal");
 
 
                 if (idEl) {
@@ -361,9 +328,9 @@ function fetchbyid(customerid) {
                 if (otE1) {
                     otE1.textContent = `Order Time : ${ordertime}`;
                 }
-                if (gtE1) {
-                    gtE1.textContent = `Grand Total : ${grandtotal}`;
-                }
+                // if (gtE1) {
+                //     gtE1.textContent = `Grand Total : ${grandtotal}`;
+                // }
 
 
                 // Load addresses for this customer
@@ -418,9 +385,21 @@ function fetchAllOrders() {
                 return;
             }
 
+
             response.data.forEach(order => {
                 const div = document.createElement("div");
                 div.className = "order-card";
+                div.onclick = function () {
+                    triggermenudetails(
+                        order.customer_id,
+                        order.order_date,
+                        order.order_time,
+                        order.order_status,
+                        order.address_id,
+                        order.order_id
+                    );
+                };
+
 
                 div.innerHTML = `
                     <p><b>Date:</b> ${order.order_date}</p>
@@ -448,6 +427,11 @@ fetchbyid(customerid);
 
 
 function addUtensilRow(sno = null, name = "", issued = "", returned = "") {
+
+    if (order_status === 0) {
+        alert("Order is cancelled. Cannot add utensils.");
+        return;
+    }
 
     const container = document.getElementById("utensils_container");
 
@@ -510,12 +494,21 @@ function getNextUtensilsId() {
 }
 
 
-
 function saveUtensils() {
-    console.log('1.utensils function');
+
+
+    if (order_status === 0) {
+        alert("Order is cancelled. Cannot save utensils.");
+        return;
+    }
+
+    if (!order_id) {
+        alert("Order ID missing");
+        return;
+    }
 
     if (!utensils_id) {
-        utensils_id = getNextUtensilsId(); // or Date.now()
+        utensils_id = getNextUtensilsId();
     }
 
     const utensils = [];
@@ -532,13 +525,12 @@ function saveUtensils() {
         if (!name || issued <= 0) return;
 
         utensils.push({
-            sno: sno,                 // 🔥 THIS keeps same DB row
+            sno: sno,
             utensils_name: name,
             issued_qty: issued,
             returned_qty: returned
         });
     });
-
 
     if (utensils.length === 0) {
         alert("No valid utensils to save");
@@ -547,15 +539,12 @@ function saveUtensils() {
 
     const payload = {
         load: "addutensils",
-        customerid: customerid,
-        addressid: addressid,
-        orderdate: orderdate,
-        ordertime: ordertime,
+        order_id: order_id,         
         utensils_id: utensils_id,
         utensils: utensils
     };
 
-    console.log('1.utensils payload', payload);
+
 
     $.ajax({
         type: "POST",
@@ -565,10 +554,10 @@ function saveUtensils() {
         dataType: "json",
 
         success: function (res) {
-            console.log('1.utensils res', res);
+         
             if (res.status === "success") {
                 alert("Utensils saved successfully");
-                loadIssuedUtensils(customerid, addressid, utensils_id);
+                loadIssuedUtensils(order_id, utensils_id);
                 clearUtensilsUI();
             } else {
                 alert(res.message || "Failed to save utensils");
@@ -581,26 +570,17 @@ function saveUtensils() {
     });
 }
 
-document.getElementById("save-utensils-btn")
+document
+    .getElementById("save-utensils-btn")
     .addEventListener("click", saveUtensils);
 
-function clearUtensilsUI() {
-    document.getElementById("utensils_container").innerHTML = "";
-    addUtensilRow();
-}
-
-
-function autoLoadUtensils() {
-    console.log("auto load");
+function loadIssuedUtensils(order_id, utensils_id) {
 
     const payload = {
-        load: "fetchutensils",
-        customerid: customerid,
-        addressid: addressid,
-        orderdate: orderdate,
-        ordertime: ordertime
+        load: "loadissuedutensils",
+        order_id: order_id,
+        utensils_id: utensils_id
     };
-    console.log("auto load payload", payload);
 
     $.ajax({
         type: "POST",
@@ -610,21 +590,72 @@ function autoLoadUtensils() {
         dataType: "json",
 
         success: function (res) {
-            console.log("auto load res", res);
 
-            if (res.status !== "success") return;
-
-            // 🔹 No utensils issued yet
-            if (!res.utensils_id || res.data.length === 0) {
-                console.log("No utensils issued yet");
-                return;
-            }
-
-            // 🔹 Store billing_id globally (important for save/update)
-            utensils_id = res.utensils_id;
+            if (res.code !== 200) return;
 
             const container = document.getElementById("utensils_container");
             container.innerHTML = "";
+
+            res.data.forEach(item => {
+
+                const row = document.createElement("div");
+                row.className = "utensil-row";
+                row.dataset.sno = item.sno;
+
+                row.innerHTML = `
+                    <input type="text" value="${item.utensils_name}">
+                    <input type="number" value="${item.issued_qty}">
+                    <input type="number" value="${item.returned_qty}">
+                    <button onclick="removeUtensilRow(this)">✖</button>
+                `;
+
+                container.appendChild(row);
+            });
+        }
+    });
+}
+
+function clearUtensilsUI() {
+    document.getElementById("utensils_container").innerHTML = "";
+    addUtensilRow();
+}
+
+
+function autoLoadUtensils() {
+
+
+    order_id = Number(order_id);
+    if (!Number.isInteger(order_id) || order_id <= 0) return;
+
+    const payload = {
+        load: "fetchutensils",
+        order_id: order_id
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/cateringservicespayments.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (res) {
+            if (res.status !== "success") return;
+
+            const container = document.getElementById("utensils_container");
+            container.innerHTML = "";
+
+            // 🔹 NO UTENSILS → RESET
+            if (!res.utensils_id || res.data.length === 0) {
+                console.log("No utensils for this order → reset");
+
+                utensils_id = null;
+                addUtensilRow();
+                return;
+            }
+
+            // 🔹 UTENSILS EXIST
+            utensils_id = res.utensils_id;
 
             res.data.forEach(item => {
                 addUtensilRow(
@@ -635,77 +666,25 @@ function autoLoadUtensils() {
                 );
             });
 
-            // 🔒 Lock issued qty
-            // 🔒 Lock ONLY utensil name (identity)
-            document
-                .querySelectorAll("#utensils_container .utensil-row input:nth-child(1)")
-                .forEach(inp => inp.readOnly = false); // keep editable if you want rename
-
+     
         }
     });
 }
 
 
-function loadpaymode() {
-    // console.log("1.loadpaymode...");
 
-    var payload = {
-        load: "loadpaymode",
-        sno: "",
-        type: "type"
-    };
 
-    $.ajax({
-        type: "POST",
-        url: "./webservices/cateringservicespayments.php",
-        data: JSON.stringify(payload),
-        dataType: "json",
-        contentType: "application/json",
-        beforeSend: function () {
-            // console.log("Fetching food types...");
-        },
-        success: function (response) {
-            // console.log("3.load paymode Response received:", response);
-
-            let dropdown = document.getElementById("pay_mode");
-            dropdown.innerHTML = ""; // Clear existing options
-
-            let defaultOption = document.createElement('option');
-            defaultOption.value = "";
-            defaultOption.text = "Select paymode";
-            // defaultOption.disabled = true;
-            defaultOption.selected = true;
-            dropdown.appendChild(defaultOption);
-
-            if (response.status === "success" && response.data.length > 0) {
-                response.data.forEach(x => {
-                    let option = document.createElement('option');
-                    option.value = x.sno;
-                    option.text = x.type;
-                    dropdown.appendChild(option);
-                });
-            } else {
-                console.warn("No paymode found.");
-                let noDataOption = document.createElement('option');
-                noDataOption.value = "";
-                noDataOption.text = "No types available";
-                noDataOption.disabled = true;
-                dropdown.appendChild(noDataOption);
-            }
-        },
-        error: function (err) {
-            console.error("Error loading paymode:", err);
-            alert("Failed to load  paymode. Please try again later.");
-        }
-    });
-}
-loadpaymode();
 
 
 
 function delieveredstatus(isDelivered = false) {
 
-    console.log("delieveredstatus");
+    // console.log("delieveredstatus");
+
+    if (order_status === 0) {
+        alert("Order is cancelled. Delivery not allowed.");
+        return;
+    }
 
     const deliveredtime = document.getElementById('delivered_time').value;
 
@@ -724,7 +703,7 @@ function delieveredstatus(isDelivered = false) {
         delivered: isDelivered ? 1 : 0
     };
 
-    console.log("deliveredstatus payload", payload);
+    // console.log("deliveredstatus payload", payload);
 
     $.ajax({
         type: "POST",
@@ -734,7 +713,7 @@ function delieveredstatus(isDelivered = false) {
         dataType: "json",
 
         success: function (res) {
-            console.log("delivered status response", res);
+            // console.log("delivered status response", res);
             if (res.status === "success") {
                 alert(isDelivered ? "Order Delivered" : "Marked Out For Delivery");
             } else {
@@ -747,3 +726,235 @@ function delieveredstatus(isDelivered = false) {
         }
     });
 }
+
+function togglePaymentOrRefundUI() {
+
+    const status = Number(order_status);
+
+    if (status === 1) {
+        // ✅ Active order → Payments
+        $('#payment_section').css('display', 'block');
+        $('#refund_section').css('display', 'none');
+    }
+    else if (status === 0) {
+        // ❌ Cancelled order → Refund
+        $('#payment_section').css('display', 'none');
+        $('#refund_section').css('display', 'block');
+
+        // Auto-fill refund values
+        $('#refund_grand_total').val($('#grand_total').val());
+        $('#refund_advance_amount').val($('#advance_amount').val());
+        $('#refund_amount').val($('#advance_amount').val());
+    }
+}
+
+
+
+function setpaymentvariables() {
+    // localstorage variables
+    const grandtotal = Number(document.getElementById("grand_total").value) || 0;
+    const orderdate = document.querySelector("input[type='date']").value;
+    const ordertime = document.querySelector("input[type='time']").value;
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+
+
+    const addressid =
+        document.querySelector('.address_block.highlight-address')
+            ?.getAttribute("data-block-aid");
+
+
+
+    localStorage.setItem("customerid", customerid);
+    localStorage.setItem("addressid", addressid);
+    localStorage.setItem("orderdate", orderdate);
+    localStorage.setItem("ordertime", ordertime);
+    localStorage.setItem("grandtotal", grandtotal);
+    window.location.href = "catering.php";
+
+
+    let redirectVariable = localStorage.getItem('orderstatus');
+    if (redirectVariable) {
+        let confirmMsg = confirm('Back to homepage');
+        if (confirmMsg) {
+            localStorage.setItem('orderstatus', null);
+            localStorage.href = 'catering.php';
+        }
+        localStorage.setItem('orderstatus', null);
+    }
+
+
+}
+
+
+
+
+function refund() {
+    // console.log("refund function");
+
+    refundamount = Number($('#refund_amount').val());
+    refunddate = $('#refund_pay_date').val();
+    refundpaymode = $('#refund_pay_mode').val();
+
+
+    var payload = {
+        load: "refund",
+        customerid: customerid,
+        addressid: addressid,
+        refunddate: refunddate,
+        refundamount: refundamount,
+        refundpaymode: refundpaymode,
+        orderdate: orderdate,
+        ordertime: ordertime
+    }
+    // console.log("refund function payload", payload);
+    $.ajax({
+        type: "POST",
+        url: "./webservices/cateringservicespayments.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+        success: function (response) {
+            // console.log("refund function response", response);
+
+            if (response && response.status === "success") {
+                alert("Refund Successful");
+            }
+            else {
+                alert(response.message || "Payment Failed");
+            }
+        },
+        error: function (xhr, status, error) {
+            // console.log("Payment error:", error);
+            alert("Error while processing payment");
+        }
+    })
+}
+
+
+function triggermenudetails(cid, odate, otime, status, aid, oid) {
+
+    order_id = Number(oid);
+
+    if (!Number.isInteger(order_id)) {
+        console.error("❌ INVALID order_id received:", oid);
+        return; // ⛔ stop here
+    }
+
+    // Update global state
+    customerid = String(cid).trim();
+    orderdate = String(odate).trim();
+    ordertime = String(otime).trim().substring(0, 5);
+    addressid = Number(aid);
+    order_status = Number(status);
+
+    // Persist
+    localStorage.setItem("order_id", order_id);
+    localStorage.setItem("customerid", customerid);
+    localStorage.setItem("orderdate", orderdate);
+    localStorage.setItem("ordertime", ordertime);
+    localStorage.setItem("addressid", addressid);
+    localStorage.setItem("orderstatus", order_status);
+
+    // console.log("✅ Selected order_id:", order_id);
+
+    $('#select-order-msg').remove();
+    $('.order-utensils').show();
+    $('#payment_section').show();
+
+    $('.orderdate').text(`Order Date : ${orderdate}`);
+    $('.ordertime').text(`Order Time : ${ordertime}`);
+
+    fetchbyid(customerid);
+    fetchTotalAmount();
+    paymenthistory();
+    autoLoadUtensils();
+    applyOrderStatusLocks();
+    togglePaymentOrRefundUI();
+}
+
+
+
+function fetchTotalAmount() {
+
+    const payload = {
+        load: "fetchtotalamount",
+        customerid: customerid,
+        addressid: addressid,
+        orderdate: orderdate,
+        ordertime: ordertime
+    };
+    // console.log("fetchamounttttt", payload);
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/cateringservicespayments.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (response) {
+
+            if (response.status !== "success") return;
+            let orderdate = response.orderdate;
+            let ordertime = response.ordertime;
+
+
+            let grandTotal = Number(response.grand_total) || 0;
+            let paidAmount = Number(response.paid_amount) || 0;
+            let recovery = Number(response.recovery_amount) || 0;
+            let balance = Number(response.amounttobe_paid) || 0;
+            let refundamount = Number(response.refund_amount) || 0;
+
+            $('#grand_total').val(grandTotal);
+            $('#advance_amount').val(paidAmount);
+            $('#amounttobe_paid').val(balance);
+            $('#recovery_amount').val(recovery);
+            $('#payment_amount').val(paidAmount);
+
+            $('#refund_grand_total').val(grandTotal);
+            $('#refund_advance_amount').val(paidAmount);
+            $('#refund_amount').val(refundamount);
+            $('#refund_order_date').val(orderdate);
+            $('#refund_order_time').val(ordertime);
+
+
+
+            // 🔒 PAYMENT CLOSED
+            if (response.payment_status == 1) {
+                closePaymentForm();
+            }
+            // 🔓 PAYMENT OPEN
+            else {
+                openPaymentForm();
+                recalculatePayment();
+            }
+
+            if (Number(response.refund_status) === 1) {
+                closeRefundForm();
+            }
+
+
+
+        },
+
+        error: function () {
+            alert("Error fetching total amount");
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -642,11 +642,11 @@
                     if (res.success) {
                         alert(res.message);
                         if (redirectVariable === "1") {
-                            let confirmMsg = confirm('Customer added! Want to go to homepage?');
+                            let confirmMsg = confirm('Customer added! Want to go to Catering Page?');
                             if (confirmMsg) {
                                 localStorage.setItem('redirectCid', res.newCustomerID);
                                 localStorage.setItem('redirectVariable', "0");
-                                location.href = 'home.php';
+                                location.href = 'catering.php';
                             }
                             localStorage.setItem('redirectVariable', "0");
                         }

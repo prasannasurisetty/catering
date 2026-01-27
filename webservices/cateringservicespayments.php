@@ -17,6 +17,10 @@ $paydate = $data['paydate'] ?? "";
 $recoveryamt = $data['recoveryamt'] ?? "";
 $deliveredtime = $data['deliveredtime'] ?? "";
 
+$refunddate =  $data['refunddate'] ?? "";
+$refundamount = $data['refundamount'] ?? "";
+$refundpaymode = $data['refundpaymode'] ?? "";
+
 if ($load == "savepayment") {
     savepayment($conn);
 } else if ($load == "paymenthistory") {
@@ -31,6 +35,106 @@ if ($load == "savepayment") {
     loadpaymode($conn);
 } else if ($load == "deliveredstatus") {
     deliveredstatus($conn);
+} else if ($load == "refund") {
+    refund($conn);
+} else if ($load == "loadissuedutensils") {
+    loadIssuedUtensils($conn);
+}
+
+
+
+
+function loadIssuedUtensils($conn)
+{
+    header('Content-Type: application/json');
+
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $order_id    = (int)($data['order_id'] ?? 0);
+    $utensils_id = (int)($data['utensils_id'] ?? 0);
+
+    if (!$order_id || !$utensils_id) {
+        echo json_encode(['code' => 400]);
+        return;
+    }
+
+    $sql = "
+        SELECT sno, utensils_name, issued_qty, returned_qty
+        FROM catering_utensils
+        WHERE order_id = $order_id
+          AND utensils_id = $utensils_id
+    ";
+
+    $result = getData($conn, $sql);
+
+    echo json_encode([
+        'code' => 200,
+        'data' => $result
+    ]);
+}
+
+
+
+
+function refund($conn)
+{
+    global $customerid, $addressid, $refunddate, $refundamount, $refundpaymode, $orderdate, $ordertime;
+
+    $adminid      = $_SESSION['adminid'] ?? 0;
+
+    $insert = "INSERT INTO `catering_refund`(`customer_id`, `address_id`, `refund_date`, `refund_amount`, `pay_mode`, `admin_id`)
+                    VALUES 
+                                            ('$customerid','$addressid','$refunddate','$refundamount','$refundpaymode','$adminid')";
+
+    $resultinsert = setData($conn, $insert);
+
+    if (!$resultinsert) {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'failed',
+            'message' => 'Failed to insert refund'
+        ]);
+        return;
+    }
+
+    $refund_id = mysqli_insert_id($conn);
+    if (!$refund_id) {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'failed',
+            'message' => 'Refund ID not generated'
+        ]);
+        return;
+    }
+
+    // 3️⃣ UPDATE catering_orders with refund_id
+    $update = "
+        UPDATE catering_orders
+        SET refund_id = '$refund_id',
+               refund_status = 1
+            WHERE customer_id = '$customerid'
+            AND address_id  = '$addressid'
+            AND order_date = '$orderdate'
+            AND order_time = '$ordertime'
+            AND order_status = 0
+        LIMIT 1
+    ";
+
+    $resultupdate = setData($conn, $update);
+
+    if ($resultupdate) {
+        echo json_encode([
+            'code' => 200,
+            'status' => 'success',
+            'refund_id' => $refund_id
+        ]);
+    } else {
+        echo json_encode([
+            'code' => 400,
+            'status' => 'failed',
+            'message' => 'Refund saved but order update failed'
+        ]);
+    }
 }
 
 
@@ -116,75 +220,42 @@ function loadpaymode($conn)
 
 
 
-function fetchutensils($conn)
+function fetchUtensils($conn)
 {
     header('Content-Type: application/json');
 
     $data = json_decode(file_get_contents("php://input"), true);
+    $order_id = (int)($data['order_id'] ?? 0);
 
-    if (
-        !$data ||
-        empty($data['customerid']) ||
-        empty($data['addressid']) ||
-        empty($data['orderdate']) ||
-        empty($data['ordertime'])
-    ) {
+    if (!$order_id) {
         echo json_encode([
-            "status" => "failed",
-            "message" => "Invalid input data"
+            'status' => 'failed',
+            'message' => 'Order ID missing'
         ]);
         return;
     }
 
-    $customerid = (int)$data['customerid'];
-    $addressid  = (int)$data['addressid'];
-    $orderdate  = mysqli_real_escape_string($conn, $data['orderdate']);
-    $ordertime  = mysqli_real_escape_string($conn, $data['ordertime']);
-
-    // 🔹 STEP 1: GET BILLING ID
-    $utensilsSql = "
-        SELECT utensils_id
-        FROM catering_orders
-        WHERE
-            customer_id = $customerid
-            AND address_id = $addressid
-            AND order_date = '$orderdate'
-            AND order_time = '$ordertime'
-                 LIMIT 1
-                     ";
-
-    $utensilsRes = mysqli_query($conn, $utensilsSql);
-
-    if (!$utensilsRes || mysqli_num_rows($utensilsRes) === 0) {
-        echo json_encode([
-            "status" => "success",
-            "utensils_id" => null,
-            "data" => []
-        ]);
-        return;
-    }
-
-    $utensilsRow = mysqli_fetch_assoc($utensilsRes);
-    $utensils_id = (int)$utensilsRow['utensils_id'];
-
-    // 🔹 STEP 2: FETCH UTENSILS USING BILLING ID
-    $utensilsSql = "
-        SELECT utensils_name, issued_qty, returned_qty,sno
+    $sql = "
+        SELECT sno, utensils_id, utensils_name, issued_qty, returned_qty
         FROM catering_utensils
-        WHERE utensils_id = $utensils_id
+        WHERE order_id = $order_id
     ";
 
-    $utRes = mysqli_query($conn, $utensilsSql);
+    $result = getData($conn, $sql);
 
-    $rows = [];
-    while ($row = mysqli_fetch_assoc($utRes)) {
-        $rows[] = $row;
+    if (!$result || count($result) === 0) {
+        echo json_encode([
+            'status' => 'success',
+            'utensils_id' => null,
+            'data' => []
+        ]);
+        return;
     }
 
     echo json_encode([
-        "status" => "success",
-        "utensils_id" => $utensils_id,
-        "data" => $rows
+        'status' => 'success',
+        'utensils_id' => $result[0]['utensils_id'],
+        'data' => $result
     ]);
 }
 
@@ -201,8 +272,7 @@ function addtensils($conn)
 
     if (
         !$data ||
-        empty($data['customerid']) ||
-        empty($data['addressid']) ||
+        empty($data['order_id']) ||
         empty($data['utensils_id']) ||
         !isset($data['utensils'])
     ) {
@@ -213,8 +283,7 @@ function addtensils($conn)
         return;
     }
 
-    $customer_id = (int)$data['customerid'];
-    $address_id  = (int)$data['addressid'];
+    $order_id    = (int)$data['order_id'];
     $utensils_id = (int)$data['utensils_id'];
     $utensils    = $data['utensils'];
 
@@ -223,9 +292,9 @@ function addtensils($conn)
     ====================== */
     $dbMap = [];
     $res = mysqli_query($conn, "
-        SELECT sno FROM catering_utensils
-        WHERE customer_id = $customer_id
-          AND address_id  = $address_id
+        SELECT sno
+        FROM catering_utensils
+        WHERE order_id = $order_id
           AND utensils_id = $utensils_id
     ");
 
@@ -250,9 +319,9 @@ function addtensils($conn)
         $issued_qty   = (int)($item['issued_qty'] ?? 0);
         $returned_qty = (int)($item['returned_qty'] ?? 0);
 
-        if ($name === "") continue;
+        if ($name === "" || $issued_qty <= 0) continue;
 
-        // ✅ UPDATE existing utensil
+        // ✅ UPDATE
         if ($sno && isset($dbMap[$sno])) {
 
             mysqli_query(
@@ -267,22 +336,21 @@ function addtensils($conn)
 
             $seen[] = $sno;
         }
-        // ➕ INSERT new utensil
+        // ➕ INSERT
         else {
 
             mysqli_query(
                 $conn,
                 "INSERT INTO catering_utensils
-                 (customer_id, address_id, utensils_id, utensils_name, issued_qty, returned_qty)
+                 (order_id, utensils_id, utensils_name, issued_qty, returned_qty)
                  VALUES
-                 ($customer_id, $address_id, $utensils_id, '$name', $issued_qty, $returned_qty)"
+                 ($order_id, $utensils_id, '$name', $issued_qty, $returned_qty)"
             );
         }
     }
 
     /* ======================
-       DELETE REMOVED UTENSILS
-       (trash → save)
+       DELETE REMOVED
     ====================== */
     foreach ($dbMap as $sno => $_) {
         if (!in_array($sno, $seen)) {
@@ -304,22 +372,26 @@ function addtensils($conn)
 
 
 
+
 function fetchtotalamount($conn)
 {
     global $customerid, $addressid, $orderdate, $ordertime;
 
     $sql = "
         SELECT 
-            grand_total,
-            paid_amount,
-            recovery_amount,
-            payment_status,
-            (grand_total + IFNULL(recovery_amount,0) - paid_amount) AS amounttobe_paid
-        FROM catering_orders
-        WHERE customer_id = '$customerid'
-          AND address_id  = '$addressid'
-          AND order_date  = '$orderdate'
-          AND order_time  = '$ordertime'
+            co.grand_total,
+            co.paid_amount,
+             co.recovery_amount,
+            co.payment_status,
+            (co.grand_total + IFNULL(co.recovery_amount,0) - co.paid_amount) AS amounttobe_paid,
+            cr.refund_amount,
+            co.refund_status
+        FROM catering_orders co
+        LEFT JOIN catering_refund cr ON cr.refund_id = co.refund_id 
+        WHERE co.customer_id = '$customerid'
+          AND co.address_id  = '$addressid'
+          AND co.order_date  = '$orderdate'
+          AND co.order_time  = '$ordertime'
         LIMIT 1
     ";
 
@@ -332,7 +404,9 @@ function fetchtotalamount($conn)
             "paid_amount"     => $result[0]['paid_amount'],
             "recovery_amount" => $result[0]['recovery_amount'],
             "amounttobe_paid" => max(0, $result[0]['amounttobe_paid']),
-            "payment_status"  => $result[0]['payment_status']
+            "payment_status"  => $result[0]['payment_status'],
+            "refund_amount"  => $result[0]['refund_amount'],
+            "refund_status"  => $result[0]['refund_status']
         ]);
     } else {
         echo json_encode([

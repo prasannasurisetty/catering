@@ -1,0 +1,508 @@
+
+        :root {
+            --color-primary: #8D3A08;
+            --color-light: #D4B05A;
+            --color-dark: #3A2615;
+            --color-medium: #C28B42;
+            --color-border: #8D3A08;
+            --color-tab: #FBF5E5;
+            --color-label: #3A2615;
+            --color-button: #8D3A08;
+            --color-blue: #007497;
+            --soft-card: #F4E6C3;
+            --muted-text: rgba(58, 38, 21, 0.55);
+            --glass-bg: rgba(80, 48, 18, 0.05);
+            --radius: 12px;
+            --shadow: 0 8px 26px rgba(50, 30, 10, 0.07);
+            --ease: cubic-bezier(.2, .9, .3, 1);
+            --card-gap: 10px;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .total {
+            height: 92vh;
+            width: 100%;
+            /* border: 5px solid violet; */
+        }
+
+
+
+        .customer_search {
+            height: 5vh;
+            /* width: 100%; */
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            background: var(--color-button);
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+
+        .search_input {
+            width: 28%;
+            /* height: 70%; */
+            outline: none;
+            margin-left: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .search_input:focus {
+            border-color: var(--color-dark);
+        }
+
+        .customer_id {
+            width: auto;
+            text-align: left;
+        }
+
+        .customer_name {
+            max-width: 25%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: left;
+            cursor: default;
+        }
+
+        .customer_ph {
+            width: auto;
+            text-align: left;
+        }
+
+        .recmd {
+            /* border: 2px solid black; */
+            font-family: "Arial";
+            font-size: 12px;
+            height: auto;
+            width: 25vw;
+            position: absolute;
+            top: 6.5vh;
+            left: 5px;
+            display: none;
+            max-height: max-content;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            font-weight: bold;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-top: 0px;
+            overflow-y: auto;
+            padding: 5px;
+            z-index: 10;
+        }
+
+        .recmd .multiple_list_item:hover {
+            color: white;
+            background-color: var(--color-dark);
+        }
+
+        .multiple_list_item {
+            margin: 0px;
+            cursor: pointer;
+            padding: 4px 8px;
+            width: 100%;
+            border: #ccc 1px solid;
+            box-sizing: border-box;
+            height: 5vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .customer_details {
+            width: 70%;
+            /* height: 100%; */
+
+            /* border:2px solid green; */
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: center;
+            color: white;
+        }
+
+        .customer_delivery_addresses {
+            width: 100%;
+            height: 30vh;
+            /* border: 2px solid blue; */
+            border: 2px solid #e3e9f2;
+            background: #f8fafd;
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            align-items: center;
+            gap: 10px;
+            display: none;
+
+        }
+
+        .customer_delivery_addresses::-webkit-scrollbar {
+            display: none;
+        }
+
+        .address_block {
+            min-width: 170px;
+            height: 120px;
+            padding: 20px 12px;
+            border: 2px solid #e3e9f2;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        /* keep radio button top-left */
+        .address_block input[type="checkbox"] {
+            align-self: self-end;
+            transform: scale(1.2);
+        }
+
+        .address_block input[type="checkbox"]:checked+.address_text {
+            border: 2px solid #0057d9;
+            border-radius: 6px;
+        }
+
+        .address_block label {
+            color: black;
+            font-size: small;
+            font-style: italic;
+        }
+
+        .checkbox-div {
+            display: flex;
+            justify-content: end;
+            flex-direction: row;
+            position: absolute;
+            top: 10px;
+            right: 8px;
+            align-items: center;
+            margin-bottom: 0px;
+        }
+
+        .address_text p {
+            margin: 0;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #submitAddressBtn {
+            background: #0161d1;
+            color: white;
+        }
+
+        #cancelAddressBtn {
+            background: #bbb;
+        }
+
+        .default-address {
+            border: 2px solid #014aac;
+            border-radius: 10px;
+        }
+
+        .setDefault {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: space-evenly;
+            white-space: nowrap;
+            gap: 5px;
+            margin: 8px 0;
+        }
+
+        .default-label {
+            display: inline-block;
+            position: absolute;
+            top: 8px;
+            background: var(--color-dark);
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .selected-address {
+            border: 2px solid #2a8df7;
+            background: #eef6ff;
+            border-radius: 10px;
+        }
+
+        .highlight-address {
+            border: 2px solid var(--color-border);
+            background: var(--color-tab);
+        }
+
+        .customer-paymentdata {
+            /* border: 2px solid red; */
+            display: flex;
+            flex-direction: row;
+            height: 86vh;
+            /* padding */
+        }
+
+        .container {
+            /* border: 2px solid orange; */
+            display: flex;
+            flex-direction: column;
+            width: 50%;
+
+        }
+
+
+        .customer-orderdata {
+            padding: 8px;
+            width: 50%;
+            /* border: 2px solid green; */
+            border: 2px solid #e3e9f2;
+            background: #f8fafd;
+            display: none;
+            border-radius: 8px;
+        }
+
+
+        .foodTypeTable {
+            /* border: 1px solid black; */
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+
+        }
+
+
+        .foodTypeTable-history {
+            /* border: 1px solid black; */
+            width: 100%;
+            border-collapse: collapse;
+            /* border-radius: 8px; */
+
+        }
+
+
+        .foodTypeTable thead {
+            background: var(--color-medium);
+            height: 35px;
+            table-layout: fixed;
+            width: 100%;
+            display: none;
+            color: white;
+            /* border-radius: 8px; */
+
+        }
+
+        .foodTypeTable-history thead {
+            /* border: 2px solid red; */
+            background: var(--color-medium);
+            height: 35px;
+            table-layout: fixed;
+            width: 100%;
+            display: table;
+            color: white;
+            /* border-radius: 8px; */
+
+        }
+
+        td {
+            border: 2px solid #e3e9f2;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .foodTypeTable-history tbody tr {
+            table-layout: fixed;
+            display: table;
+            width: 100%;
+
+        }
+
+        .foodTypeTable tbody tr {
+            table-layout: fixed;
+            display: table;
+            width: 100%;
+
+        }
+
+        .foodTypeTable-history tbody {
+            display: block;
+            height: 450px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+
+        }
+
+        .foodTypeTable tbody {
+            display: block;
+            height: 614px;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+
+        }
+
+        .customer-billdata {
+            border: 3px solid #e3e9f2;
+            /* border: 2px solid green; */
+            background: #f8fafd;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            border-radius: 8px;
+            height: 59vh;
+        }
+        .refund{
+            border: 3px solid #e3e9f2;
+            /* border: 2px solid green; */
+            background: #f8fafd;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            border-radius: 8px;
+            height: 59vh;
+        }
+
+        .form-bill {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 6px;
+
+        }
+
+        input {
+            width: 150px;
+            height: 30px;
+            border-radius: 5px;
+
+        }
+          #pay_date
+          ,#refund_pay_date {
+            width: 155px;
+            height: 30px;
+            border-radius: 5px;
+        }
+
+        select {
+            width: 160px;
+            height: 33px;
+            border-radius: 5px;
+        }
+
+        .form-rows {
+            width: 55%;
+            /* border:1px solid black; */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            /* gap: 5px; */
+
+        }
+
+        label {
+            align-items: start;
+        }
+
+
+
+        /* dialogue box start */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content {
+            background: white;
+            margin: auto;
+            padding: 20px;
+            width: 60%;
+            border-radius: 10px;
+            height: 70vh;
+        }
+
+        .close {
+            float: right;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* dialogue box end */
+        #dynamicInput {
+            /* width: 55%; */
+            /* border:1px solid black; */
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            gap:50px;
+            white-space: nowrap;
+        }
+        #dynamicInput label {
+            width: 150px;
+        }
+
+
+           #dynamicInput1 {
+            /* width: 55%; */
+            /* border:1px solid black; */
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            gap:50px;
+            white-space: nowrap;
+        }
+        #dynamicInput1 label {
+            width: 150px;
+        }
+        
+
+        .balance-amount {
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            color: #8D3A08;
+        }
+
+        #payment-button,
+        #refund_button {
+            width: 150px;
+            height: 30px;
+            border: none;
+            background-color: #8D3A08;
+            color: white;
+            border-radius: 5px;
+            margin-left: 130px;
+        }
+
+        .button {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: row;
+            gap:30px;
+            /* border: 2px solid red; */
+        }
+      

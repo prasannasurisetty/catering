@@ -1,59 +1,54 @@
+function showToast(message, type = "success") {
+    let bgColor = "#4CAF50"; // success
+
+    if (type === "error") bgColor = "#f44336";
+    if (type === "warning") bgColor = "#ff9800";
+
+    Toastify({
+        text: message,
+        duration: 2000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: bgColor,
+        close: false,
+    }).showToast();
+}
 
 let selectedAddressId = null;
 let checkedAddressIds = [];
-const searchinput = document.getElementById("search_input");
-if (searchinput) {
-    searchinput.addEventListener("input", () => {
-        const value = searchinput.value.trim();
+let searchinput = document.getElementById("search_input");
 
-        // If empty, clear suggestions and skip request
-        const recmd = document.querySelector(".recmd");
-        if (!value) {
-            if (recmd) {
-                recmd.innerHTML = "";
+
+searchinput.addEventListener("input", () => {
+    var payload = {
+        load: "search",
+        searchvalue: searchinput.value,
+    };
+    $.ajax({
+        type: "POST",
+        url: "./webservices/register.php",
+        data: JSON.stringify(payload),
+        dataType: "json",
+        success: function (response) {
+            let recmd = document.querySelector(".recmd");
+            recmd.innerHTML = "";
+            if (response.data.length > 0) {
+                recmd.style.display = "flex";
+                response.data.forEach((itm) => {
+                    let para = document.createElement("p");
+                    para.setAttribute("class", "multiple_list_item");
+                    para.setAttribute("onclick", `fetchbyid(${itm.CustomerID})`);
+                    para.innerHTML = `<span>${itm.CustomerID} -</span>
+                    <span>${itm.CustomerName} (</span><span>${itm.Phone1})</span>`;
+                    recmd.appendChild(para);
+                });
+
+            } else {
                 recmd.style.display = "none";
             }
-            return;
-        }
-
-        const payload = {
-            load: "search",
-            searchvalue: value,
-        };
-
-        $.ajax({
-            type: "POST",
-            url: "./webservices/register.php",
-            data: JSON.stringify(payload),
-            dataType: "json",
-            success: function (response) {
-                if (!recmd) return;
-                recmd.innerHTML = "";
-
-                if (response.data && response.data.length > 0) {
-                    recmd.style.display = "flex";
-                    response.data.forEach((itm) => {
-                        const para = document.createElement("p");
-                        para.setAttribute("class", "multiple_list_item");
-                        para.setAttribute("onclick", `fetchbyid(${itm.CustomerID})`);
-                        para.innerHTML = `
-                  <span>${itm.CustomerID}-</span>
-                  <span>${itm.CustomerName} (</span>
-                  <span>${itm.Phone1})</span>
-                `;
-                        recmd.appendChild(para);
-                    });
-                } else {
-                    recmd.style.display = "none";
-                }
-            },
-            error: function (err) {
-                //console.log(err);
-                alert("Something Wrong");
-            },
-        });
+        },
     });
-}
+});
 
 function highlightAddress(aid) {
     selectedAddressId = aid;
@@ -75,22 +70,74 @@ function highlightAddress(aid) {
     const plateinfo = document.getElementById("plate-info");
     if (plateinfo) plateinfo.style.display = "flex";
 
+    fetchmenu(customerid, aid);
+
 }
 
 
+
+function triggermenudetails(customerid, orderdate, ordertime) {
+    customerid = String(customerid).trim();
+    orderdate = String(orderdate).trim();
+    ordertime = String(ordertime).trim();
+
+
+
+    // ✅ Populate inputs
+    $('#order-date').val(orderdate);
+    $('#order-time').val(ordertime);
+
+    // ✅ Persist state
+    localStorage.setItem("customerid", customerid);
+    localStorage.setItem("orderdate", orderdate);
+    localStorage.setItem("ordertime", ordertime);
+
+    // ✅ Load customer → addresses → menu
+    fetchbyid(customerid);
+}
+
+function autoFetchOnDateTimeChange() {
+    const customerid = document.querySelector(".customer_id")?.dataset.cid;
+    const addressid = selectedAddressId;
+
+    const orderdate = $('#order-date').val();
+    const ordertime = $('#order-time').val();
+
+    if (!customerid || !addressid || !orderdate || !ordertime) return;
+
+    fetchmenu(customerid, addressid);
+}
+
+
+
+
 function fetchbyid(sinput) {
-    const payload = {
-        load: "fetchbyid",
+    customerid = sinput;
+
+    var load = "fetchbyid";
+
+    var payload = {
+        load: load,
         customerid: sinput,
     };
-
     $.ajax({
         type: "POST",
         url: "./webservices/register.php",
         data: JSON.stringify(payload),
         dataType: "json",
         success: function (response) {
-            if (response.status === "Success" && response.data && response.data[0]) {
+            if (response.status === "Success") {
+                document.querySelector(".recmd").style.display = "none";
+                document.querySelector(".search_input").value = "";
+                document.querySelector(".customer_id").textContent = `ID :${response.data[0].CustomerID}`;
+                document.querySelector(".customer_id").dataset.cid = response.data[0].CustomerID;
+                document.querySelector(".customer_name").textContent = `Name :${response.data[0].CustomerName}`;
+                document.querySelector(".customer_name").setAttribute("title", response.data[0].CustomerName);
+                document.querySelector(".customer_ph").textContent = `PH Number :${response.data[0].Phone1}`;
+
+
+
+
                 const customer = response.data[0];
 
                 const recmdEl = document.querySelector(".recmd");
@@ -123,129 +170,20 @@ function fetchbyid(sinput) {
                 document.querySelector(".catering-ordering").style.display = "flex";
                 document.getElementById("addresses_container").style.display = "flex";
 
-                document.getElementById("menu-order").style.display = "none";
+                // document.getElementById("menu-order").style.display = "none";
 
             } else {
-                alert("NO DATA FOUND");
                 document.querySelector(".catering-ordering").style.display = "none";
                 document.getElementById("addresses_container").style.display = "none";
-                document.getElementById("menu-order").style.display = "none";
+                // document.getElementById("menu-order").style.display = "none";
             }
-        },
-        error: function (err) {
-            alert("Something wrong");
-            //console.log(err);
+            return;
+
         },
     });
 }
 
-function deleteAddress(aid) {
-    if (!confirm("Are you sure you want to delete this address?")) return;
 
-    const payload = {
-        load: "deleteAddress",
-        aid: aid,
-    };
-
-    $.ajax({
-        type: "POST",
-        url: "./webservices/home.php",
-        data: JSON.stringify(payload),
-        contentType: "application/json",
-        dataType: "json",
-        success: function (response) {
-            if (response.status === "success") {
-                alert("Address deleted successfully!");
-                loadAddress();
-            } else {
-                alert("Delete failed: " + (response.message || "Unknown error"));
-            }
-        },
-        error: function (err) {
-            //console.log("Error deleting address:", err);
-            alert("Error deleting address.");
-        },
-    });
-}
-
-function edit_address(address) {
-    addAddress(); // show/create modal
-
-    // Fill fields
-    document.getElementById("houseno").value = address.flatno || "";
-    document.getElementById("street").value = address.street || "";
-    document.getElementById("area").value = address.area || "";
-    document.getElementById("landmark").value = address.landmark || "";
-    document.getElementById("ph_number").value = address.address_ph_number || "";
-    document.getElementById("address_link").value = address.addresslink || "";
-    document.getElementById("pincode").value = address.pincode || "";
-
-    const defaultCheckbox = document.getElementById("default_address");
-    defaultCheckbox.checked = address.isDefault == 1;
-
-    // Prevent unchecking if it's currently default (until another is made default)
-    defaultCheckbox.onchange = function () {
-        if (address.isDefault == 1 && !defaultCheckbox.checked) {
-            alert(
-                "Cannot remove this address from default. Make another address default first."
-            );
-            defaultCheckbox.checked = true;
-        }
-    };
-
-    let btn = document.getElementById("submitAddressBtn");
-    btn.innerText = "Update";
-    btn = resetButtonEvents(btn);
-
-    btn.onclick = function () {
-        const cidEl = document.querySelector(".customer_id");
-        const cid = cidEl ? cidEl.dataset.cid : null;
-
-        if (!cid) {
-            alert("Please select a customer before updating address.");
-            return;
-        }
-
-        const phone = (document.getElementById("ph_number").value || "").trim();
-        if (!/^[6-9][0-9]{9}$/.test(phone)) {
-            alert("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.");
-            return;
-        }
-
-        const payload = {
-            load: "editAddress",
-            aid: address?.aid,
-            cid: cid,
-            houseno: (document.getElementById("houseno").value || "").trim(),
-            street: (document.getElementById("street").value || "").trim(),
-            area: (document.getElementById("area").value || "").trim(),
-            landmark: (document.getElementById("landmark").value || "").trim(),
-            phone: phone,
-            link: (document.getElementById("address_link").value || "").trim(),
-            pincode: (document.getElementById("pincode").value || "").trim(),
-            default: defaultCheckbox.checked ? 1 : 0,
-        };
-
-        // //console.log("Updated Address Payload:", payload);
-
-        $.ajax({
-            type: "POST",
-            url: "./webservices/home.php",
-            data: JSON.stringify(payload),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (response) {
-                alert(response.message || "Address updated.");
-                closeAddressModal();
-                loadAddress();
-            },
-            error: function (err) {
-                console.error("Error updating address:", err);
-                alert("Error updating address.");
-            },
-        });
-    };
-}
 
 function addAddress() {
     let modal = document.getElementById("address_area");
@@ -336,13 +274,13 @@ function addAddress() {
         const cid = cidEl ? cidEl.dataset.cid : null;
 
         if (!cid) {
-            alert("Please select a customer before adding address.");
+            showToast("Please select a customer before adding address.", "warning");
             return;
         }
 
         const phone = (document.getElementById("ph_number").value || "").trim();
         if (!/^[6-9][0-9]{9}$/.test(phone)) {
-            alert("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.");
+            showToast("Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.", "warning");
             return;
         }
 
@@ -358,23 +296,99 @@ function addAddress() {
             pincode: (document.getElementById("pincode").value || "").trim(),
             default: document.getElementById("default_address").checked ? 1 : 0,
         };
-
-        // //console.log("Address Submitted:", payload);
-
         $.ajax({
             type: "POST",
-            url: "./webservices/home.php",
+            url: "./webservices/catering.php",
             data: JSON.stringify(payload),
             contentType: "application/json",
             dataType: "json",
             success: function (response) {
-                alert(response.message || "Address added.");
+                showToast(response.message || "Address added.", "success");
                 loadAddress();
                 closeAddressModal();
             },
-            error: function (err) {
-                console.error("Error adding address:", err);
-                alert("Error adding address.");
+        });
+    };
+}
+
+function deleteAddress(aid) {
+    if (!confirm("Are you sure you want to delete this address?")) return;
+
+    var payload = {
+        load: "deleteAddress",
+        aid: aid,
+    };
+
+
+
+    $.ajax({
+        type: "POST",
+        url: "./webservices/catering.php",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        dataType: "json",
+
+        success: function (response) {
+            if (response.status === "success") {
+                showToast("Address deleted successfully!", "success");
+                loadAddress();
+            } else {
+                showToast("Delete failed: " + response.message, "warning");
+            }
+        },
+    });
+}
+
+function edit_address(address) {
+    addAddress();
+
+    document.getElementById("houseno").value = address.flatno || "";
+    document.getElementById("street").value = address.street || "";
+    document.getElementById("area").value = address.area || "";
+    document.getElementById("landmark").value = address.landmark || "";
+    document.getElementById("ph_number").value = address.address_ph_number || "";
+    document.getElementById("address_link").value = address.addresslink || "";
+    document.getElementById("pincode").value = address.pincode || "";
+
+    let defaultCheckbox = document.getElementById("default_address");
+    defaultCheckbox.checked = address.isDefault == 1;
+    defaultCheckbox.onchange = function () {
+        if (address.isDefault == 1 && !defaultCheckbox.checked) {
+            showToast(
+                "Cannot remove this address from default. Make another address default first.", "warning"
+            );
+            defaultCheckbox.checked = true;
+        }
+    };
+
+    let btn = document.getElementById("submitAddressBtn");
+    btn.innerText = "Update";
+    btn = resetButtonEvents(btn);
+
+    btn.onclick = function () {
+        var payload = {
+            load: "editAddress",
+            aid: address?.aid,
+            cid: document.querySelector(".customer_id").dataset.cid,
+            houseno: document.getElementById("houseno").value,
+            street: document.getElementById("street").value,
+            area: document.getElementById("area").value,
+            landmark: document.getElementById("landmark").value,
+            phone: document.getElementById("ph_number").value,
+            link: document.getElementById("address_link").value,
+            pincode: document.getElementById("pincode").value,
+            default: defaultCheckbox.checked ? 1 : 0,
+        };
+        $.ajax({
+            type: "POST",
+            url: "./webservices/catering.php",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+                showToast(response.message, "success");
+                closeAddressModal();
+                loadAddress();
             },
         });
     };
@@ -396,10 +410,10 @@ function loadAddress() {
     const cidEl = document.querySelector(".customer_id");
     const cid = cidEl ? cidEl.dataset.cid : null;
 
-    // if (!cid) {
-    //     console.warn("No customer selected, cannot load addresses.");
-    //     return;
-    // }
+    if (!cid) {
+        showToast("No customer selected, cannot load addresses.", "warning");
+        return;
+    }
 
     const payload = {
         load: "get_address",
@@ -437,7 +451,6 @@ function loadAddress() {
 
                   <div class="address_text">
                     ${isDefault ? `<span class="default-label">Default</span>` : ""}
-
                     <p>${address.flatno || ""}</p>
                     <p>${address.street || ""}</p>
                     <p>${address.area || ""}</p>
@@ -446,14 +459,12 @@ function loadAddress() {
                     <p>${address.pincode || ""}</p>
                     <p>${address.addresslink || ""}</p>
 
-                    <p class="address-actions"
-                       style="color:red;justify-self:end;display:flex;position:absolute;bottom:8px;gap:10px;align-items:center;">
-                      <i class="fa fa-pencil edit-address"
-                         style="cursor:pointer;"
-                         data-address="${encodeURIComponent(JSON.stringify(address))}"></i>
-                      <i class="fa fa-trash delete-address"
-                         style="cursor:pointer;"
-                         data-aid="${address.aid}"></i>
+                  <p style="color:red;justify-self:end;display:flex;position: absolute;bottom: 8px;gap:10px;align-items:center;">                   
+                  <i class="fa fa-pencil" style="cursor:pointer;" onclick='edit_address(${JSON.stringify(
+                        address
+                    )})'></i>                  
+                  <i class="fa fa-trash" style="cursor:pointer;" onclick="deleteAddress(${address.aid
+                        })"></i>
                     </p>
                   </div>
                 </div>
@@ -468,6 +479,7 @@ function loadAddress() {
                     if (cid) {
                         fetchmenu(cid, selectedAddressId);
 
+
                     }
 
                 }
@@ -478,20 +490,15 @@ function loadAddress() {
                     const aid = parseInt($(this).data("aid"), 10);
                     if (!isNaN(aid)) checkedAddressIds.push(aid);
                 });
-                // //console.log("Checked Address IDs (Init):", checkedAddressIds);
-
                 // Optional external function
                 if (typeof autoLoadActiveFoodtype === "function") {
                     autoLoadActiveFoodtype();
                 }
             } else {
-                alert("No address found");
+                showToast("No address found", "warning");
             }
         },
-        error: function (err) {
-            //console.log(err);
-            alert("Error loading address list.");
-        },
+
     });
 }
 
@@ -533,6 +540,7 @@ function updateGrandTotal() {
     // ✅ AUTO UPDATE INPUT
     document.getElementById("grand_total").value = grandTotal;
 }
+
 function addServiceRow() {
     const container = document.getElementById("services_container");
 
@@ -553,10 +561,11 @@ function addServiceRow() {
                 onclick="removeServiceRow(this)">
             <i class="fa fa-trash"></i>
         </button>
-    `;
+         `;
 
     container.appendChild(row);
 }
+
 function checkDuplicateService(input) {
     const value = input.value.trim().toLowerCase();
     if (!value) return;
@@ -571,7 +580,7 @@ function checkDuplicateService(input) {
         });
 
     if (count > 1) {
-        alert("This service is already added.");
+        showToast("This service is already added.", "warning");
         input.value = "";
         input.focus();
     }
@@ -590,28 +599,51 @@ function removeServiceRow(btn) {
     updateGrandTotal();
 }
 
-
 function getItemsFromTextarea() {
     const text = document.getElementById("item-names").value.trim();
     if (!text) return [];
 
     return text
-        .split("\n")
-        .map(line => line.trim())
-        .filter(Boolean);
+        // split ONLY by comma or newline
+        .split(/[\n,]+/)
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
 }
+
+function validateServicesAmount() {
+    let valid = true;
+    let errorService = "";
+
+    document.querySelectorAll("#services_container .service-row").forEach(row => {
+        const name = row.querySelector("input[type='text']")?.value.trim();
+        const cost = Number(row.querySelector(".service-cost")?.value) || 0;
+
+        if (name && cost <= 0) {
+            valid = false;
+            errorService = name;
+        }
+    });
+
+    if (!valid) {
+        showToast(`Please enter amount for service: ${errorService}`, "warning");
+        return false;
+    }
+
+    return true;
+}
+
 
 function saveCateringOrder() {
     const cidEl = document.querySelector(".customer_id");
     const customer_id = cidEl ? cidEl.dataset.cid : null;
 
     if (!customer_id) {
-        alert("Select customer first");
+        showToast("Select customer first", "warning");
         return;
     }
 
     if (!selectedAddressId) {
-        alert("Select address first");
+        showToast("Select address first", "warning");
         return;
     }
 
@@ -622,7 +654,7 @@ function saveCateringOrder() {
     const order_time = orderTimeEl ? orderTimeEl.value : "";
 
     if (!order_date || !order_time) {
-        alert("Select order date and time");
+        showToast("Select order date and time", "warning");
         return;
     }
 
@@ -636,7 +668,7 @@ function saveCateringOrder() {
 
 
     if (plate_count <= 0 || plate_cost <= 0) {
-        alert("Enter valid plate count and plate cost");
+        showToast("Enter valid plate count and plate cost", "warning");
         return;
     }
 
@@ -657,7 +689,7 @@ function saveCateringOrder() {
 
 
     if (!fooditems.length) {
-        alert("No valid food items found");
+        showToast("No valid food items found", "error");
         return;
     }
 
@@ -674,12 +706,17 @@ function saveCateringOrder() {
             services.push({ id, name, cost });
         }
     });
-
-
-    if (advance_amount > 0 && !pay_mode) {
-        alert("Select payment mode for advance");
+    if (!validateServicesAmount()) {
         return;
     }
+
+    if (advance_amount > 0 && !pay_mode) {
+        showToast("Select payment mode for advance", "warning");
+        return;
+    }
+
+
+
 
     /* ================= PAYLOAD ================= */
 
@@ -700,9 +737,6 @@ function saveCateringOrder() {
         remarks: remarks
     };
 
-
-    console.log("SAVE ORDER PAYLOAD:", payload);
-
     /* ================= AJAX ================= */
 
     $.ajax({
@@ -714,8 +748,8 @@ function saveCateringOrder() {
 
         success: function (response) {
             if (response.status === "success") {
-                alert("Order saved successfully");
-                fetchAllOrders();
+                showToast("Order saved successfully", "success");
+
 
                 // RESET FORM
                 document.getElementById("item-names").value = "";
@@ -727,16 +761,13 @@ function saveCateringOrder() {
                 document.getElementById("remarks-input").innerHTML = "";
 
             } else {
-                alert(response.message || "Failed to save order");
+                showToast(response.message || "Failed to save order", "error");
             }
+            fetchAllOrders();
         },
-
-        error: function (err) {
-            console.error("Save order error:", err);
-            alert("Server error while saving order");
-        }
     });
 }
+
 
 function updateOrder() {
 
@@ -745,17 +776,42 @@ function updateOrder() {
     const orderdate = $('#order-date').val();
     const ordertime = $('#order-time').val();
 
-    const plate_count = Number(document.getElementById("plate_count").value) || 0;
-    const plate_cost = Number(document.getElementById("plate_price").value) || 0;
-    const total_amount = Number(document.getElementById("total_amount").value) || 0;
-    const grand_total = Number(document.getElementById("grand_total").value) || 0;
+    if (!customerid || !addressid || !orderdate || !ordertime) {
+        showToast("Missing required order details", "warning");
+        return;
+    }
 
-    /* ===== FOOD ITEMS ===== */
-    /* ===== FOOD ITEMS (RAW STRINGS ONLY) ===== */
-    const fooditems = getItemsFromTextarea(); // already returns string[]
+    /* =============================
+       🚫 DATE & TIME VALIDATION
+    ============================= */
 
+    const now = new Date();
+    now.setSeconds(0, 0);
 
-    /* ===== SERVICES ===== */
+    const selectedDateTime = new Date(`${orderdate}T${ordertime}:00`);
+
+    // ❌ past date or past time
+    if (selectedDateTime < now) {
+        showToast("Past date or past time cannot be updated", "warning");
+        return;
+    }
+
+    // ❌ exact current time
+    if (selectedDateTime.getTime() === now.getTime()) {
+        showToast("Current time is not allowed. Select future time.", "warning");
+        return;
+    }
+
+    /* =============================
+       ✅ CONTINUE YOUR EXISTING CODE
+    ============================= */
+
+    const plate_count = Number($('#plate_count').val()) || 0;
+    const plate_cost = Number($('#plate_price').val()) || 0;
+    const total_amount = Number($('#total_amount').val()) || 0;
+    const grand_total = Number($('#grand_total').val()) || 0;
+
+    const fooditems = getItemsFromTextarea();
     const services = [];
 
     document.querySelectorAll("#services_container .service-row").forEach(row => {
@@ -764,14 +820,13 @@ function updateOrder() {
         const cost = Number(row.querySelector(".service-cost")?.value) || 0;
 
         if (name) {
-            services.push({
-                sno: sno,        // 🔥 THIS keeps same row
-                name: name,
-                cost: cost
-            });
+            services.push({ sno, name, cost });
         }
-        console.log("services sno", sno);
     });
+    // 🚨 SERVICE VALIDATION
+    if (!validateServicesAmount()) {
+        return;
+    }
 
 
     const payload = {
@@ -797,16 +852,12 @@ function updateOrder() {
 
         success: function (res) {
             if (res.status === "success") {
-                alert("Order updated successfully");
+                showToast("Order updated successfully", "success");
                 fetchAllOrders();
             } else {
-                alert(res.message || "Update failed");
+                showToast(res.message || "Update failed", "error");
             }
         },
-
-        error: function () {
-            alert("Server error while updating order");
-        }
     });
 }
 
@@ -815,7 +866,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const saveBtn = document.getElementById("save-menu");
 
     if (!saveBtn) {
-        console.error("Save button (#save-menu) not found");
+        showToast("Save button (#save-menu) not found", "error");
         return;
     }
 
@@ -843,26 +894,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     saveCateringOrder();  // 💾 SAVE
                 }
             },
-
-            error: function () {
-                alert("Error checking order");
-            }
         });
     });
 
 });
 
-
-
-
 document.getElementById("cancel-menu").addEventListener("click", cancelOrder);
-
 function cancelOrder() {
-
-    if (!confirm("Are you sure you want to cancel this order?")) {
-        return;
-    }
-
     const customerid = document.querySelector(".customer_id")?.dataset.cid;
     const addressid = selectedAddressId;
     var orderdate = $('#order-date').val();
@@ -870,7 +908,22 @@ function cancelOrder() {
 
 
     if (!customerid || !addressid || !orderdate) {
-        alert("Missing order details");
+        showToast("Missing order details", "warning");
+        return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize
+
+    const selectedDate = new Date(orderdate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+        showToast("Past orders cannot be cancelled", "warning");
+        return;
+    }
+
+    if (!confirm("Are you sure you want to cancel this order?")) {
         return;
     }
 
@@ -891,26 +944,21 @@ function cancelOrder() {
 
         success: function (response) {
             if (response.status === "success") {
-                alert("Order cancelled successfully");
-
+                showToast("Order cancelled successfully", "success");
+                fetchmenu(customerid, addressid);
                 clearMenuUI();
                 fetchAllOrders();
+                showCancelRefundUI();
+
+
             } else {
-                alert(response.message || "Failed to cancel order");
+                showToast(response.message || "Failed to cancel order", "warning");
             }
         },
-
-        error: function () {
-            alert("Server error while cancelling order");
-        }
     });
 }
 
-
-
-
 // right side div 
-
 function fetchAllOrders() {
 
     var payload = {
@@ -941,6 +989,15 @@ function fetchAllOrders() {
             response.data.forEach(order => {
                 const div = document.createElement("div");
                 div.className = "order-card";
+                div.onclick = function () {
+                    triggermenudetails(
+                        order.customer_id,
+                        order.order_date,
+                        order.order_time
+                    );
+                };
+
+
 
                 div.innerHTML = `
                     <p><b>Date:</b> ${order.order_date}</p>
@@ -954,13 +1011,8 @@ function fetchAllOrders() {
                 container.appendChild(div);
             });
         },
-
-        error: function () {
-            alert("Error loading orders");
-        }
     });
 }
-
 
 // Load on page open
 fetchAllOrders();
@@ -974,7 +1026,7 @@ function fetchmenu(customerid, addressid) {
 
     // 🔒 HARD GUARD
     if (!customerid || !addressid || !orderdate || !ordertime) {
-        console.warn("Missing required data", {
+        showToast("Missing required data", "warning", {
             customerid, addressid, orderdate, ordertime
         });
         return;
@@ -987,8 +1039,6 @@ function fetchmenu(customerid, addressid) {
         orderdate: orderdate,
         ordertime: ordertime
     };
-
-
     $.ajax({
         type: "POST",
         url: "./webservices/catering.php",
@@ -1056,20 +1106,19 @@ function fetchmenu(customerid, addressid) {
             document.getElementById("plate_count").value = first.order_count;
             document.getElementById("plate_price").value = first.plate_cost;
             document.getElementById("total_amount").value = first.total_amount;
+            document.getElementById("remarks-input").value = first.order_remarks;
+
 
             updateSummary();
             updateGrandTotal();
+            order_status = response.order_status;
+            localStorage.setItem("orderstatus", order_status);
         },
-
-
-        error: function () {
-            alert("Server error");
-        }
     });
 }
 
+let order_status = null;
 function autoFetchOnDateTimeChange() {
-    console.log("function runnninggggg");
     const customerid = document.querySelector(".customer_id")?.dataset.cid;
     const addressid = selectedAddressId;
 
@@ -1088,6 +1137,7 @@ function autoFetchOnDateTimeChange() {
 $(document).on('change', '#order-date, #order-time', function () {
     autoFetchOnDateTimeChange();
 });
+
 function renderServices(services) {
     const container = document.getElementById("services_container");
     container.innerHTML = "";
@@ -1147,6 +1197,7 @@ function setpaymentvariables() {
     const ordertime = document.querySelector("input[type='time']").value;
     const customerid = document.querySelector(".customer_id")?.dataset.cid;
 
+
     const addressid =
         document.querySelector('.address_block.highlight-address')
             ?.getAttribute("data-block-aid");
@@ -1160,37 +1211,45 @@ function setpaymentvariables() {
     localStorage.setItem("grandtotal", grandtotal);
     window.location.href = "cateringservicespayments.php";
 
+
 }
 
 
 
 
+
 document.getElementById("item-names").addEventListener("input", function () {
-    const lines = this.value
-        .split("\n")
-        .map(line => line.trim().toLowerCase())
+
+    const raw = this.value.toLowerCase();
+
+    // 🔥 Split ONLY by newline, comma, or dot
+    const tokens = raw
+        .split(/[\n,.]+/)
+        .map(x => x.trim())
         .filter(Boolean);
 
     const seen = new Set();
     const duplicates = new Set();
 
-    lines.forEach(item => {
-        if (seen.has(item)) {
-            duplicates.add(item);
+    tokens.forEach(token => {
+
+        // 🔥 Remove quantity ONLY if it is at the end (idly-3 → idly)
+        const baseItem = token.replace(/-\d+$/, '').trim();
+
+        if (seen.has(baseItem)) {
+            duplicates.add(baseItem);
         }
-        seen.add(item);
+        seen.add(baseItem);
     });
 
     const warningEl = document.getElementById("duplicate-warning");
 
     if (duplicates.size > 0) {
         warningEl.style.visibility = "visible";
-
         warningEl.textContent =
             "Duplicate item found: " + Array.from(duplicates).join(", ");
     } else {
         warningEl.style.visibility = "hidden";
-
         warningEl.textContent = "";
     }
 });
@@ -1198,9 +1257,11 @@ document.getElementById("item-names").addEventListener("input", function () {
 
 
 
-function loadpaymode() {
-    // console.log("1.loadpaymode...");
 
+
+
+
+function loadpaymode() {
     var payload = {
         load: "loadpaymode",
         sno: "",
@@ -1214,10 +1275,9 @@ function loadpaymode() {
         dataType: "json",
         contentType: "application/json",
         beforeSend: function () {
-            // console.log("Fetching food types...");
         },
         success: function (response) {
-            // console.log("3.load paymode Response received:", response);
+
 
             let dropdown = document.getElementById("pay_mode");
             dropdown.innerHTML = ""; // Clear existing options
@@ -1237,7 +1297,6 @@ function loadpaymode() {
                     dropdown.appendChild(option);
                 });
             } else {
-                console.warn("No paymode found.");
                 let noDataOption = document.createElement('option');
                 noDataOption.value = "";
                 noDataOption.text = "No types available";
@@ -1245,13 +1304,25 @@ function loadpaymode() {
                 dropdown.appendChild(noDataOption);
             }
         },
-        error: function (err) {
-            console.error("Error loading paymode:", err);
-            alert("Failed to load  paymode. Please try again later.");
-        }
     });
 }
 loadpaymode();
+
+
+let redirectVariable = 0;
+
+function setRedirectVariable() {
+    redirectVariable = 1;
+    localStorage.setItem('redirectVariable', redirectVariable);
+}
+let redirectCid = localStorage.getItem("redirectCid");
+
+$(document).ready(function () {
+    if (redirectCid && redirectCid !== "0") {
+        fetchbyid(redirectCid);
+        localStorage.setItem('redirectCid', "0");
+    }
+});
 
 
 
