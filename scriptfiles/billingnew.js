@@ -96,8 +96,6 @@ function highlightAddress(aid) {
 
     selectedAddressId = aid;
 
-
-
     document.querySelectorAll(".address_block").forEach(el =>
         el.classList.remove("highlight-address")
     );
@@ -111,7 +109,7 @@ function highlightAddress(aid) {
 
     }
 
-    resetOrderContext();
+    // resetOrderContext();
 
 }
 
@@ -805,10 +803,30 @@ function fetchAllOrders(customerId, addressId) {
             const tbody = document.querySelector("#foodTypeTable tbody");
             tbody.innerHTML = "";
 
+            // if (response.code !== 200 || response.data.length === 0) {
+            //     resetOrderContext();
+            //     return;
+            // }
+
             if (response.code !== 200 || response.data.length === 0) {
-                resetOrderContext();
+
+                // 🟡 Clear ONLY orders table
+                tbody.innerHTML = `
+        <tr>
+            <td colspan="5" style="text-align:center;color:#888;">
+                No orders found for this address
+            </td>
+        </tr>
+    `;
+
+                // ✅ STILL SHOW PAYMENT DETAILS
+                fetchTotalAmount();   // <-- THIS IS KEY
+                $('#payment_section').show();
+                $('#refund_section').hide();
+
                 return;
             }
+
 
             response.data.forEach((order, index) => {
 
