@@ -89,7 +89,7 @@
                                 <input type="time" id="delivered_time">
                             </div>
                             <div class="button-total">
-                                <button id="delivered" onclick="delieveredstatus(true)">Delivered</button>
+                                <button id="delivered" onclick="delieveredstatus(true); generatechallansdata();">Delivered</button>
 
                             </div>
                         </div>

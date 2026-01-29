@@ -35,9 +35,6 @@
             --pending: #e53935;
         }
 
-        * {
-            font-family: "Calibri Light", Calibri, sans-serif;
-        }
 
         .wrapper {
             /* margin:20px; */
@@ -84,7 +81,7 @@
         }
 
         .search-box input {
-            width: 250%;
+            width: 235%;
             padding: 10px 12px 10px 36px;
             border: 1px solid var(--border);
             border-radius: 6px;

@@ -189,7 +189,9 @@
                             <!-- <th>Paid Date</th> -->
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <!-- <tbody></tbody> -->
+                     <tbody id="paymentTableBody"></tbody>
+
                 </table>
 
             </div>

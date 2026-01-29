@@ -96,7 +96,6 @@ function highlightAddress(aid) {
 
     selectedAddressId = aid;
 
-    // 🔥 RESET old order data when address changes
 
 
     document.querySelectorAll(".address_block").forEach(el =>
@@ -109,9 +108,13 @@ function highlightAddress(aid) {
 
     if (customerId) {
         fetchAllOrders(customerId, aid);
+
     }
+
     resetOrderContext();
+
 }
+
 
 
 
@@ -747,28 +750,67 @@ function fetchAllOrders(customerId, addressId) {
         contentType: "application/json",
         dataType: "json",
 
+        //     success: function (response) {
+
+        //         const tbody = document.querySelector("#foodTypeTable tbody");
+        //         tbody.innerHTML = "";
+
+        //         if (response.code !== 200 || response.data.length === 0) {
+
+        //             tbody.innerHTML = `
+        //     <tr>
+        //         <td colspan="5" style="text-align:center;">
+        //             No orders found for this address
+        //         </td>
+        //     </tr>
+        // `;
+
+        //             // 🔥 No orders → reset UI
+        //             resetOrderContext();
+        //             return;
+        //         }
+
+
+        //         response.data.forEach(order => {
+
+        //             const pending =
+        //                 parseFloat(order.grand_total) - parseFloat(order.paid_amount);
+
+        //             const tr = document.createElement("tr");
+        //             tr.style.cursor = "pointer";
+
+        //             tr.onclick = function () {
+        //                 populatePaymentDetails(order);
+        //                 togglePaymentOrRefundUI(order);
+
+
+        //             };
+
+
+
+        //             tr.innerHTML = `
+        //                 <td>${order.order_date}</td>
+        //                 <td>${order.order_time}</td>
+        //                 <td>₹${order.grand_total}</td>
+        //                 <td>₹${order.paid_amount}</td>
+        //                 <td>₹${pending.toFixed(2)}</td>
+        //             `;
+
+        //             tbody.appendChild(tr);
+        //         });
+        //     },
+
         success: function (response) {
 
             const tbody = document.querySelector("#foodTypeTable tbody");
             tbody.innerHTML = "";
 
             if (response.code !== 200 || response.data.length === 0) {
-
-                tbody.innerHTML = `
-        <tr>
-            <td colspan="5" style="text-align:center;">
-                No orders found for this address
-            </td>
-        </tr>
-    `;
-
-                // 🔥 No orders → reset UI
                 resetOrderContext();
                 return;
             }
 
-
-            response.data.forEach(order => {
+            response.data.forEach((order, index) => {
 
                 const pending =
                     parseFloat(order.grand_total) - parseFloat(order.paid_amount);
@@ -776,24 +818,48 @@ function fetchAllOrders(customerId, addressId) {
                 const tr = document.createElement("tr");
                 tr.style.cursor = "pointer";
 
+                tr.innerHTML = `
+            <td>${order.order_date}</td>
+            <td>${order.order_time}</td>
+            <td>₹${order.grand_total}</td>
+            <td>₹${order.paid_amount}</td>
+            <td>₹${pending.toFixed(2)}</td>
+        `;
+
                 tr.onclick = function () {
                     populatePaymentDetails(order);
                     togglePaymentOrRefundUI(order);
+
+                    if (Number(order.order_status) === 1) {
+                        $('#payment_section').show();
+                        $('#refund_section').hide();
+                    } else {
+                        $('#payment_section').hide();
+                        $('#refund_section').show();
+                    }
+                    $('#payment-button').prop('disabled', false);
+                    $('#refund_button').prop('disabled', false);
                 };
 
-
-
-                tr.innerHTML = `
-                    <td>${order.order_date}</td>
-                    <td>${order.order_time}</td>
-                    <td>₹${order.grand_total}</td>
-                    <td>₹${order.paid_amount}</td>
-                    <td>₹${pending.toFixed(2)}</td>
-                `;
-
                 tbody.appendChild(tr);
+
+                // 🔥 AUTO SELECT FIRST ORDER
+                // if (index === 0) {
+                // populatePaymentDetails(order);
+                togglePaymentOrRefundUI(order);
+
+                if (Number(order.order_status) === 1) {
+                    $('#payment_section').show();
+                    $('#refund_section').hide();
+                } else {
+                    $('#payment_section').hide();
+                    $('#refund_section').show();
+                }
+                // }
             });
+
         },
+
 
         error: function () {
             showToast("Error loading orders", "error");
@@ -985,29 +1051,30 @@ function generateTaxInvoice(data) {
         };
         let paidTotal = 0;
 
-  data.orders.forEach((o, i) => {
+        data.orders.forEach((o, i) => {
 
-    const baseAmount =
-        Number(o.total_amount) + Number(o.services_amount);
+            const baseAmount =
+                Number(o.total_amount) + Number(o.services_amount);
 
-    const cgst = baseAmount * data.tax.cgst / 100;
-    const sgst = baseAmount * data.tax.sgst / 100;
-    const igst = baseAmount * data.tax.igst / 100;
+            const cgst = baseAmount * data.tax.cgst / 100;
+            const sgst = baseAmount * data.tax.sgst / 100;
+            const igst = baseAmount * data.tax.igst / 100;
 
-    const total = baseAmount + cgst + sgst + igst;
+            const total = baseAmount + cgst + sgst + igst;
 
-    totals.qty += Number(o.order_count);
-    totals.amount += baseAmount;
-    totals.cgst += cgst;
-    totals.sgst += sgst;
-    totals.igst += igst;
-    totals.grand += total;
+            totals.qty += Number(o.order_count);
+            totals.amount += baseAmount;
+            totals.cgst += cgst;
+            totals.sgst += sgst;
+            totals.igst += igst;
+            totals.grand += total;
 
-    paidTotal += Number(o.paid_amount);
+            paidTotal += Number(o.paid_amount);
 
-    tbody.insertAdjacentHTML("beforeend", `
+            tbody.insertAdjacentHTML("beforeend", `
         <tr>
             <td>${i + 1}</td>
+            <td>996337</td>
             <td>${o.order_date}</td>
             <td>${o.order_time}</td>
             <td class="right">${o.total_amount}</td>
@@ -1018,21 +1085,21 @@ function generateTaxInvoice(data) {
             <td class="right">${total.toFixed(2)}</td>
         </tr>
     `);
-});
+        });
 
 
         /* ================= TOTALS ================= */
-        d.getElementById("tQty").innerText = totals.qty;
-        d.getElementById("tAmount").innerText = totals.amount.toFixed(2);
-        d.getElementById("tCgst").innerText = totals.cgst.toFixed(2);
-        d.getElementById("tSgst").innerText = totals.sgst.toFixed(2);
-        d.getElementById("tIgst").innerText = totals.igst.toFixed(2);
-        d.getElementById("tGrand").innerText = totals.grand.toFixed(2);
+        // d.getElementById("tQty").innerText = totals.qty;
+        // d.getElementById("tAmount").innerText = totals.amount.toFixed(2);
+        // d.getElementById("tCgst").innerText = totals.cgst.toFixed(2);
+        // d.getElementById("tSgst").innerText = totals.sgst.toFixed(2);
+        // d.getElementById("tIgst").innerText = totals.igst.toFixed(2);
+        // d.getElementById("tGrand").innerText = totals.grand.toFixed(2);
 
         d.getElementById("sumTotal").innerText = totals.grand.toFixed(2);
-        d.getElementById("paidAmount").innerText = paidTotal.toFixed(2);
-        d.getElementById("balanceAmount").innerText =
-            (totals.grand - paidTotal).toFixed(2);
+        // d.getElementById("paidAmount").innerText = paidTotal.toFixed(2);
+        // d.getElementById("balanceAmount").innerText =
+        //     (totals.grand - paidTotal).toFixed(2);
 
         /* ================= PRINT ================= */
         setTimeout(() => {

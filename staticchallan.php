@@ -72,25 +72,23 @@
   <h2>RETURNABLE DELIVERY CHALLAN</h2>
   <div class="row">
     <div class="col">
-      <b>VEDYA HOSPITALITIES PVT. LTD.</b><br>
-      55/8/29, HB Colony Rd, beside Sri Venkateswara Swamy Temple,<br>
-      KRM Colony, Maddilapalem, Visakhapatnam – 530013
+      <b>
     </div>
     <div class="col">
-      <b>Challan No:</b> RDC-001<br>
-      <b>Date:</b> DD/MM/YYYY<br>
-      <b>Time:</b> HH:MM
+      <b></b> <br>
+      <b></b><br>
+      <b></b>
     </div>
   </div>
   <div class="row">
     <div class="col">
-      <span class="label">Customer Name:</span> ___________<br>
-      <span class="label">Phone:</span> XXXXXXXXXX
+      <span class="label"></span><br>
+      <span class="label"></span> 
     </div>
     <div class="col">
-      <span class="label">Address:</span><br>
-      ___________________________<br>
-      ___________________________
+      <span class="label"></span><br>
+      <br>
+      
     </div>
   </div>
   <table>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dynamic Delivery Challan</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+        }
+
+        .challan {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 22px 26px;
+            border: 1px solid #000;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 14px;
+            text-decoration: underline;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .col {
+            width: 48%;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+        }
+
+        table th {
+            background: #f0f0f0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stamp {
+            border: 1px solid #000;
+            padding: 14px;
+            width: 230px;
+            text-align: center;
+        }
+
+        .note {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= RETURNABLE CHALLAN ================= -->
+    <div class="challan">
+        <h3><center>RETURNABLE DELIVERY CHALLAN</center></h3>
+
+        <div class="row">
+            <div class="col">
+                <b class="org_name"></b><br>
+                <span class="org_address"></span><br>
+                <span class="org_city"></span><br>
+                <span class="org_extra"></span>
+            </div>
+            <div class="col">
+                <b>Challan No:</b> <span id="r_challan_no"></span><br>
+                <b>Date:</b> <span id="r_date"></span><br>
+                <b>Time:</b> <span id="r_time"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <span class="label">Customer Name:</span> <span id="r_customer"></span><br>
+                <span class="label">Phone:</span> <span id="r_phone"></span>
+            </div>
+            <div class="col">
+                <span class="label">Address:</span><br>
+                <span id="r_address"></span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Utensil Name</th>
+                    <th>Issued Qty</th>
+                </tr>
+            </thead>
+            <tbody id="returnable_items"></tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">Total Quantity</th>
+                    <th id="total_returnable_qty">0</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="footer">
+            <div class="stamp">Company Stamp<br><br>Authorized Signature</div>
+            <div class="stamp">Receiver Signature<br><br>________________</div>
+        </div>
+    </div>
+
+    <!-- ================= UNRETURNABLE CHALLAN ================= -->
+    <div class="challan">
+        <h3><center>UNRETURNABLE DELIVERY CHALLAN</center></h3>
+
+        <div class="row">
+            <div class="col">
+                <b class="org_name"></b><br>
+                <span class="org_address"></span><br>
+                <span class="org_city"></span><br>
+                <span class="org_extra"></span>
+            </div>
+            <div class="col">
+                <b>Challan No:</b> <span id="u_challan_no"></span><br>
+                <b>Date:</b> <span id="u_date"></span><br>
+                <b>Time:</b> <span id="u_time"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <span class="label">Customer Name:</span> <span id="u_customer"></span><br>
+                <span class="label">Customer Phone:</span> <span id="u_phone"></span>
+            </div>
+            <div class="col">
+                <span class="label">Address:</span>
+                <span id="u_address"></span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Service</th>
+                    <th>Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody id="unreturnable_items"></tbody>
+        </table>
+
+        <div class="note">
+            <b>Total Amount Due:</b> ₹ <span id="total_amount">0</span>
+        </div>
+
+        <div class="footer">
+            <div class="stamp">Company Stamp<br><br>Authorized Signature</div>
+        </div>
+    </div>
+
+</body>
+
+</html>

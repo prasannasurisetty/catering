@@ -17,9 +17,7 @@
     --card-gap: 10px;
 }
 
-* {
-    font-family: "Calibri Light", Calibri, sans-serif;
-}
+
 
 
 
@@ -367,7 +365,7 @@ body {
 
 
 .plate-row label {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     width: 95px;
     /* display: flex;

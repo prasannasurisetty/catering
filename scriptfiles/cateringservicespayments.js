@@ -93,12 +93,12 @@ $(document).ready(function () {
 
     if (!hasOrderContext()) {
 
-     
+
         $('.order-utensils').hide();
         $('#payment_section').hide();
         $('#refund_section').hide();
 
-     
+
         if (!$('#select-order-msg').length) {
             $('.payment-container').prepend(`
                 <div id="select-order-msg" style="
@@ -149,10 +149,6 @@ $('#recovery_amount, #paid_amount').on('input', function () {
     recalculatePayment();
 });
 
-
-
-
-
 function openPaymentForm() {
 
     $('.form-row').show();
@@ -164,7 +160,6 @@ function openPaymentForm() {
 
     $('#payment-closed-msg').remove();
 }
-
 
 function closePaymentForm() {
 
@@ -206,10 +201,6 @@ function closePaymentForm() {
         `);
     }
 }
-
-
-
-
 
 function paymenthistory() {
 
@@ -539,7 +530,7 @@ function saveUtensils() {
 
     const payload = {
         load: "addutensils",
-        order_id: order_id,         
+        order_id: order_id,
         utensils_id: utensils_id,
         utensils: utensils
     };
@@ -554,7 +545,7 @@ function saveUtensils() {
         dataType: "json",
 
         success: function (res) {
-         
+
             if (res.status === "success") {
                 alert("Utensils saved successfully");
                 loadIssuedUtensils(order_id, utensils_id);
@@ -666,7 +657,7 @@ function autoLoadUtensils() {
                 );
             });
 
-     
+
         }
     });
 }
@@ -719,7 +710,9 @@ function delieveredstatus(isDelivered = false) {
             } else {
                 alert(res.message || "Failed to update delivery status");
             }
+
         },
+
 
         error: function () {
             alert("Server error");
@@ -942,6 +935,167 @@ function fetchTotalAmount() {
         }
     });
 }
+
+
+
+//--------------------- printing challans-------------
+
+function generatechallansdata() {
+    console.log("generate challans data function");
+
+    var payload = {
+        load: "loadchallan",
+        orderdate,
+        ordertime,
+        customerid,
+        addressid
+    };
+
+    console.log("generate challans payload", payload);
+
+    fetch("./webservices/challan.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(res => res.json())
+        .then(response => {
+            console.log("Prepare and Print challan response:", response);
+
+            if (response.code !== 200) {
+                alert(response.status || "challan generation failed");
+                return;
+            }
+
+            // ✅ PASS FULL RESPONSE OBJECT
+            generateprintchallan(response);
+        })
+        .catch(err => {
+            console.error("Error loading challan", err);
+            alert("Failed to load challan data");
+        });
+}
+
+
+function generateprintchallan(data) {
+    console.log("generateprintchallan called", data);
+
+    if (!data) {
+        alert("No challan data received");
+        return;
+    }
+
+    const printWindow = window.open(
+        "challan.html",
+        "_blank",
+        "width=794,height=1123"
+    );
+
+    printWindow.onload = function () {
+
+        const d = printWindow.document;
+
+        /* ================= SAFETY CHECK ================= */
+        if (!d.querySelector(".org_name")) {
+            alert("Print template not loaded correctly");
+            return;
+        }
+
+        /* ================= ORGANIZATION ================= */
+        d.querySelectorAll(".org_name").forEach(e => e.innerText = data.organization.name);
+        d.querySelectorAll(".org_address").forEach(e => e.innerText = data.organization.address);
+        d.querySelectorAll(".org_city").forEach(e => e.innerText = data.organization.city);
+        d.querySelectorAll(".org_extra").forEach(e =>
+            e.innerText = `Phone: ${data.organization.phone} | GST: ${data.organization.gstin}`
+        );
+
+        /* ================= DATE & TIME ================= */
+        const now = new Date();
+        const date = now.toLocaleDateString("en-GB");
+        const time = now.toLocaleTimeString();
+
+        /* ================= CUSTOMER ================= */
+        d.getElementById("r_customer").innerText = data.customer.name;
+        d.getElementById("r_phone").innerText = data.customer.phone;
+        d.getElementById("r_address").innerText = data.customer.address;
+
+        d.getElementById("u_customer").innerText = data.customer.name;
+        d.getElementById("u_phone").innerText = data.customer.phone;
+        d.getElementById("u_address").innerText = data.customer.address;
+
+        /* ================= CHALLAN NUMBERS ================= */
+        d.getElementById("r_challan_no").innerText = data.returnable.challan_no;
+        d.getElementById("u_challan_no").innerText = data.unreturnable.challan_no;
+
+        d.getElementById("r_date").innerText = date;
+        d.getElementById("r_time").innerText = time;
+        d.getElementById("u_date").innerText = date;
+        d.getElementById("u_time").innerText = time;
+
+        /* ================= RETURNABLE ITEMS ================= */
+        const rBody = d.getElementById("returnable_items");
+        rBody.innerHTML = "";
+
+        let totalQty = 0;
+
+        data.returnable.items.forEach((item, index) => {
+            totalQty += parseInt(item.qty, 10);
+
+            rBody.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                </tr>
+            `;
+        });
+
+        d.getElementById("total_returnable_qty").innerText = totalQty;
+
+        /* ================= UNRETURNABLE SERVICES ================= */
+        const uBody = d.getElementById("unreturnable_items");
+        uBody.innerHTML = "";
+
+        let totalAmount = 0;
+
+        data.unreturnable.services.forEach((service, index) => {
+            totalAmount += parseFloat(service.amount);
+
+            uBody.innerHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${service.name}</td>
+                    <td>₹ ${service.amount}</td>
+                </tr>
+            `;
+        });
+
+        d.getElementById("total_amount").innerText = totalAmount;
+
+        /* ================= PRINT ================= */
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.onafterprint = () => printWindow.close();
+        }, 500);
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

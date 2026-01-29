@@ -1026,9 +1026,9 @@ function fetchmenu(customerid, addressid) {
 
     // 🔒 HARD GUARD
     if (!customerid || !addressid || !orderdate || !ordertime) {
-        showToast("Missing required data", "warning", {
-            customerid, addressid, orderdate, ordertime
-        });
+        // showToast("Missing required data", "warning", {
+        //     customerid, addressid, orderdate, ordertime
+        // });
         return;
     }
 
